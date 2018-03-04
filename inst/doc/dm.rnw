@@ -1,0 +1,232 @@
+%\VignetteEngine{knitr::knitr}
+%\VignetteIndexEntry{How to use 'refactor' (knitr produced documentation)}
+\documentclass{article}
+
+<<'Setup', cache=FALSE, echo=FALSE, include=FALSE>>=
+rm(list=ls())
+library(dm)
+## .load_only <- TRUE
+## if(.load_only){
+##     devtools::load_all()
+## } else {
+##     library(dm)
+## }
+set.seed(19790424)
+if(FALSE){ ## create document
+    knitr::knit2pdf('dm.rnw')
+}
+@
+
+\title{dm}
+\author{Henrik Renlund}
+\newcommand{\code}{\texttt}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\section{About}
+\texttt{dm} is a package for functions relating to data management.
+
+\newpage
+\section{\texttt{dm} and related functions}
+
+\subsection{The problem that is trying to be solved}
+A statistical report sometimes build an \emph{analytical data base} (ADB) from
+multiple sources, variables that might need to be renamed and (if categorical)
+recoded (and possibly transformed), the documentation of which is
+\emph{significantly boring}.
+
+The \texttt{dm} functions is an interactive-ish way of creating an ADB which
+both inspects the chosen variables and ``documents'' the process.
+
+\subsection{The elevator pitch description}
+\begin{enumerate}
+\item point to variables (from possibly different sources), one at the time,
+  with \verb|dm| (along with possible renaming, recoding and
+  transformation). This gives a summary of the variable pointed to
+  \footnote{Typically one wants to to this procedure anyway to sanity check all
+    variables that are to be included.}, and the information is stored in a list
+  somewhere.
+  \item create the ADB by \verb|dm_create|.
+  \item \label{da_point} get easy-to-print documentation of where variables came
+    from (\verb|dm_doc2latex|) and what recodings have been done
+    (\verb|dm_recode2latex|).
+\end{enumerate}
+So, the point really is to get (\ref{da_point}) ``for free'' in a way that is
+connected to the creation of the ADB.
+
+\subsection{The stuck-in-an-elevator description}
+If most variables are picked form the same source, this can be set in options.
+<<"no-eval-opts", echo = TRUE, eval = FALSE>>=
+opts_dm$set('default_db' = 'MyDataBase')
+@
+If that is done, \texttt{dm} only needs a \texttt{var} argument, the name of the
+var you want to add. But you can use
+\begin{itemize}
+  \item \verb|var|, name of variable in source
+  \item \verb|name|, optional, if you want a new name for the variable (else it
+    is set to \verb|var|)
+  \item \verb|db|, name of data frame (or similar) where \verb|var| exists (else
+    will look at the default location, if set)
+  \item \verb|recode|, a list that specifies the recoding. This is the \verb|L|
+    argument for the \verb|recode| function that this package provides (see the
+    help for that functions)
+  \item \verb|transf| a function for transforming (this might be something like
+    a character-to-date function like \verb|ymd| from the lubridate package)
+  \item \verb|comment| if you want to keep some comment about the variable
+  \item \verb|label| if you want to give the variable a "label" (i.e. the value
+    of the label attribute)
+  \item \verb|keep.label| if \verb|var| already has a label in \verb|db|, should
+    this be kept? (only if no \verb|label| is provided)
+\end{itemize}
+Then as \texttt{dm} is evaluated, information about the variable is printed (to
+see range, levels and such).
+<<"no-eval-dm", echo = TRUE, eval = FALSE>>=
+dm(var = 'gEndEr', name = 'gender', label = "Perceived Gender")
+    ## is followed by information being printed
+@
+
+The information about the options is stored in a list (by default "dm\_doc" in
+an environment "dm\_envir").\footnote{This is due to it begin poor for functions
+  practice to write to objects in the global environment.} The key is the 'name'
+element, so as long as that is not changed, you can rerun the function with new
+arguments if something went wrong
+<<"no-eval-dm2", echo = TRUE, eval = FALSE>>=
+dm('gEndEr', 'gender', label = "Biological Gender") ## overwrites
+    ## the 'gender' entry
+@
+Else, kill all documentation and start again
+<<"no-eval-dm3", echo = TRUE, eval = FALSE>>=
+dm_doc(kill = TRUE, prompt = FALSE) ## or possibly kill only this
+  ## entry dm:::dm_doc_set('gender', NULL)
+@
+
+The documentation can be accessed
+<<"no-eval-doc", echo = TRUE, eval = FALSE>>=
+myDoc <- dm_doc()
+print(myDoc)  ## N.B not all information is printed
+@
+
+Once all variables are created you can either store the "documentation" (and
+point to it later) or go on to create the ADB with \verb|dm_create|. Specify a
+set if individuals (vector of id's) and, if necessary a vector of how
+individuals are indentified in different data frames. If the \texttt{doc}
+argument is not provided it will just look in \verb|dm_doc()|.
+<<"no-eval-create", echo = TRUE, eval = FALSE>>=
+id_key = c('MyDataBase' = 'id', 'Other1' = 'ID', 'Other2' = 'idno')
+ADB <- dm_create(set = MyDataBase$id, id.name = id_key)
+@
+
+Now you have an ADB and you can print \verb|dm_doc()| to show where all
+variables come from. You can get all recodings from
+<<"no-eval-tables", echo = TRUE, eval = FALSE>>=
+lapply(dm_doc(), FUN = function(x) x$recode_table)
+@
+
+There is also convience functions \verb|dm_recode2latex| and \verb|dm_doc2latex|
+which will print all tables and documentation, respectively, in \LaTeX\,format.
+
+\subsection{Toy Example}
+We create some toy data
+<<"create-data">>=
+n <- 200
+BL <- data.frame(
+    id = structure(sprintf("id%d", 1:n),
+                   label = "identification"),
+    aalder = structure(round(rnorm(n, 50, 10)),
+                       label = "Age at some time",
+                       foo = 'whatever'),
+    vikt = rpois(n, 50),
+    gr = sample(c('A1', 'A2', 'B1', 'c', 'unknown'), n, TRUE),
+    koon = structure(sample(c('M', 'K'), n, T),
+                     label = "The Sex"),
+    nar = as.Date("2001-01-01") + runif(n, 0, 3650),
+    stringsAsFactors = FALSE
+)
+BL$vikt[sample(1:n, 15)] <- NA
+BL$gr[sample(1:n, 10)] <- NA
+m <- .9*n
+COMP <- data.frame(
+    ID = structure(sample(BL$id, m),
+                   label = "identification"),
+    foo = rbinom(m, 1, .2),
+    bar = structure(rexp(m, 1/150),
+                    label = "Time passed")
+)
+@
+
+There are some functions to help look for relevant variables.
+<<"find">>=
+db_info(BL) ## prints names and 'label' attributes
+dm_find(pattern = 'time') ## looks in names and labels
+@
+
+Most variables of interest are in \verb|BL| so set this as deault.
+<<"default">>=
+opts_dm$set('default_db' = 'BL')
+@
+
+Next, we add the first variable (and view the output)
+<<"add-gender">>=
+dm('koon', 'Gender',
+   recode = list('Male' = 'M', 'Female' = 'K'))
+@
+
+Next, we add some more variables (but hide the output)
+<<"add-rest", echo = TRUE, results = 'hide'>>=
+dm('aalder', 'Age')
+dm('nar', 'When', comment = "wtf?")
+dm('foo', 'event', db = 'COMP',
+   recode = list('No' = '0', 'Yes' = 1),
+   label = "An event at some time")
+dm('bar', 'time', db = 'COMP', transf = log)
+## 'gr' will be recoded in a more complex way
+L <- list('A' = c('A1', 'A2'),
+          'BC' = c('B1', 'c'),
+          'Unknown' = c('unknown', NA))
+dm('gr', recode = L, label = 'Group')
+@
+When we are done, we create the ADB with
+
+<<"create">>=
+ADB <- dm_create(set = BL$id,
+                 id.name = c('BL' = 'id', 'COMP' = 'ID'))
+db_info(ADB)
+@
+
+We can view, or get the information
+<<"get-doc">>=
+## myDoc <- dm_doc()
+dm_doc() ## only prints partial information in the doc
+@
+
+If we are using \LaTeX, we can get the code for this with
+<<"dm_doc2latex", results = 'asis'>>=
+dm_doc2latex(caption = "Variables and their origin.")
+@
+and all recode-information with
+
+<<"recoded", results = 'asis'>>=
+dm_recode2latex()
+@
+
+Else, you can get the information from the 'print' of the \verb|dm_doc()| and
+the recodings with, respectively,
+<<"variable-overview",eval = FALSE>>=
+d <- print(dm_doc(), print = FALSE)
+lapply(dm_doc(), FUN = function(x) x$recode_table)
+@
+
+
+%% \clearpage
+%% \section{Other functions}
+%% Maybe some documentation will appear on
+%% \begin{itemize}
+%% \item \texttt{grepr}
+%% \item \texttt{cdate}
+%% \item \texttt{equal\_nchar}
+%% \item \texttt{db\_table}
+%% \end{itemize}
+
+\end{document}
