@@ -1,6 +1,5 @@
 #' @title This function manipulates factor levels
 #' @description This functions enables relabeling, reordering and merging of factor levels.
-#' @author Henrik Renlund
 #' @param x factor or character vector to be relabelled or reordered
 #' @param L a list specifying the relabeling/reordering, list names specify a
 #'     new (or old) name and the list elements are vectors of (old) values that
@@ -38,8 +37,8 @@ recode <- function(x, L, asFactor = TRUE, newFirst = TRUE){
    if(!is.list(L)) stop("[recode] 'L' needs to be a list.")
    L_names <- names(L)
    L_entries <- unlist(L, use.names = FALSE)
-   if(any(duplicated(L_names))) stop("[recode] duplicated names in 'L'")
-   if(any(duplicated(L_entries))) stop("[recode] duplicated entries in 'L'")
+   if(any(duplicated(L_names))) warning("[recode] duplicated names in 'L'")
+   if(any(duplicated(L_entries))) warning("[recode] duplicated entries in 'L'")
    ignored <- setdiff(lev, c(L_names, L_entries)) ## what happens to NA?
    copy_x <- char_x
    for(nm in L_names){

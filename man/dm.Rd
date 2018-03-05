@@ -12,8 +12,8 @@ dm(var, name = var, db = NULL, recode = NULL, transf = NULL,
 
 \item{name}{character, (new) name of variable, will be 'var' if unspecified}
 
-\item{db}{character, name of data frame, if \code{NULL}, will look for default setting in
-\code{opts_dm$get('default_db')}.}
+\item{db}{character, name of data frame, if \code{NULL}, will look for
+default setting in \code{opts_dm$get('default_db')}.}
 
 \item{recode}{recode \code{L} argument for recoding}
 
@@ -21,10 +21,11 @@ dm(var, name = var, db = NULL, recode = NULL, transf = NULL,
 
 \item{comment}{character, a comment or some such extra information}
 
-\item{label}{character, something to be stored as label attribute for this variable}
+\item{label}{character, something to be stored as label attribute for this
+variable}
 
-\item{keep.label}{logical, if \code{var} has a label in \code{db}, should it be kept?
-(only if \code{label} is \code{NULL})}
+\item{keep.label}{logical, if \code{var} has a label in \code{db}, should it
+be kept?  (only if \code{label} is \code{NULL})}
 }
 \description{
 This creates a list of data management information (defaults to

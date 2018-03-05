@@ -17,8 +17,8 @@ cdate(x, sep = NULL, low.bound = NULL, ok.years = NULL)
 error, \code{NULL} (default) all years are accepted}
 }
 \description{
-fix censored dates of the type '20110000' or '20110200' by selecting the
-    midpoint of the censored time interval. If a lower bound is given, the
-    midpoint between this point and the end of the censored interval is
-    chosen.
+fix censored dates of the type '20110000' or '20110200' by
+    selecting the midpoint of the censored time interval. If a lower bound
+    is given, the midpoint between this point and the end of the censored
+    interval is chosen.
 }

@@ -145,7 +145,7 @@ RECORDS
 
 searchString <- c('Foo' = 'foo', 'Bar' = 'bar', 'Quuz' = 'quuz')
 
-tm <- time_match(
+tm <- grepict(
     pattern = searchString, ## what to search for
     x = c('what1', 'what2'), ## search variables in 'data'
     data = RECORDS, ## data set to search in
@@ -175,7 +175,7 @@ medhist
 ## ----'find-outcomes'-----------------------------------------------------
 
 POP$endofstudy <- POP$enter + 365
-tm2 <- time_match(pattern = searchString, x = c('what1', 'what2'),
+tm2 <- grepict(pattern = searchString, x = c('what1', 'what2'),
                   data = RECORDS, id = 'identity', date = 'what.date',
                   units = POP, units.id = 'id',
                   begin = 'enter', ## earliest date to search from
@@ -196,7 +196,7 @@ names(outcomes) <- gsub("time", "t", names(outcomes), fixed = TRUE)
 outcomes
 
 ## ----'other'-------------------------------------------------------------
-tm3 <- time_match(pattern = searchString, x = c('what1', 'what2'),
+tm3 <- grepict(pattern = searchString, x = c('what1', 'what2'),
                   data = RECORDS, id = 'identity', date = 'what.date',
                   units = POP, units.id = 'id', begin = 'enter',
                   end = 'endofstudy',
@@ -211,7 +211,7 @@ val <- c('id', 'alias', 'event', 'time', 'events', 'matches.info')
 tm3[, val]
 
 ## ----'other2'------------------------------------------------------------
-tm4 <- time_match(pattern = searchString, x = c('what1', 'what2'),
+tm4 <- grepict(pattern = searchString, x = c('what1', 'what2'),
                   data = RECORDS, id = 'identity', date = 'what.date',
                   units = POP, units.id = 'id', begin = 'enter',
                   end = 'endofstudy',

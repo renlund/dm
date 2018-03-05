@@ -9,7 +9,7 @@
 #' @export
 dm_create <- function(set, id.name, doc = NULL, dplyr = FALSE){
     if(dplyr && !requireNamespace("dplyr")){
-        warning("[dm_create] package dplyr not available")
+        warning("package dplyr not available")
         dplyr <- FALSE
     }
     if(is.null(doc)) doc <- dm_doc()
@@ -18,7 +18,7 @@ dm_create <- function(set, id.name, doc = NULL, dplyr = FALSE){
     all_db <- unique(unlist(lapply(doc, function(x) x$db)))
     missing_db <- all_db[!all_db %in% ls(envir = .GlobalEnv, all.names = TRUE)]
     if(length(missing_db) > 0) {
-        stop("[dm_create] can't find:\n",
+        stop("can't find:\n",
              paste0(missing_db, collapse = ", "),
              "\n            in global enviroment")
     }

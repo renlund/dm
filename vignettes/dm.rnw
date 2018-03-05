@@ -232,7 +232,9 @@ lapply(dm_doc(), FUN = function(x) x$recode_table)
 
 
 \newpage
-\section{\texttt{time\_match}}
+\section{\texttt{grepict}}
+(\verb|grep| by \textbf{i}ndividual, (possibly) \textbf{c}onstrained in
+\textbf{t}ime.)
 
 \subsection{The problem we want to solve}
 Suppose you have a set of units in a data set, and another data set where each
@@ -315,7 +317,7 @@ format (which will be default).
 
 searchString <- c('Foo' = 'foo', 'Bar' = 'bar', 'Quuz' = 'quuz')
 
-tm <- time_match(
+tm <- grepict(
     pattern = searchString, ## what to search for
     x = c('what1', 'what2'), ## search variables in 'data'
     data = RECORDS, ## data set to search in
@@ -332,7 +334,7 @@ tm <- time_match(
 
 @
 
-\verb|time_match| will return a data frame with many variables and, with
+\verb|grepict| will return a data frame with many variables and, with
 this configuration, at least one row per individual and search string,
 and possibly as many as one per search string times variable searched in.
 Output (names are fixed):
@@ -382,7 +384,7 @@ create this delayed start as a variable. Search dates are inclusive.
 <<'find-outcomes'>>=
 
 POP$endofstudy <- POP$enter + 365
-tm2 <- time_match(pattern = searchString, x = c('what1', 'what2'),
+tm2 <- grepict(pattern = searchString, x = c('what1', 'what2'),
                   data = RECORDS, id = 'identity', date = 'what.date',
                   units = POP, units.id = 'id',
                   begin = 'enter', ## earliest date to search from
@@ -431,7 +433,7 @@ information on all matches:
 \end{itemize}
 
 <<'other'>>=
-tm3 <- time_match(pattern = searchString, x = c('what1', 'what2'),
+tm3 <- grepict(pattern = searchString, x = c('what1', 'what2'),
                   data = RECORDS, id = 'identity', date = 'what.date',
                   units = POP, units.id = 'id', begin = 'enter',
                   end = 'endofstudy',
@@ -459,7 +461,7 @@ a naming scheme if no names are supplied).
 Below you can see the structure
 
 <<'other2'>>=
-tm4 <- time_match(pattern = searchString, x = c('what1', 'what2'),
+tm4 <- grepict(pattern = searchString, x = c('what1', 'what2'),
                   data = RECORDS, id = 'identity', date = 'what.date',
                   units = POP, units.id = 'id', begin = 'enter',
                   end = 'endofstudy',

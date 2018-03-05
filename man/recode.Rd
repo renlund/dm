@@ -40,6 +40,3 @@ table(y, x, useNA = 'ifany')
 \seealso{
 \code{\link{factor}}, \code{\link{relevel}}
 }
-\author{
-Henrik Renlund
-}

@@ -1,5 +1,5 @@
-##' @title helper for time_match
-##' @description this is essentially a helper function for \code{time_match}, see the
+##' @title helper for grepict
+##' @description this is essentially a helper function for \code{grepict}, see the
 ##'     documentation
 ##' @param pattern a search string to pass to \code{grepl}
 ##' @param x names of variables to search in (in order of importance, if
@@ -18,14 +18,13 @@
 ##' @param paste.alias if \code{long = FALSE} and if 'x' has a names attribute,
 ##'     this will be pasted onto some output variable names, unless you set
 ##'     override this behavour by setting this argument to zero
-##' @return See \code{\link{time_match}} for details on output
-##' @seealso \code{\link{time_match}}, \code{\link[base]{grepl}}
-##' @author Henrik Renlund
-time_match_rigid <- function(pattern, x = NULL, data, ...,
+##' @return See \code{\link{grepict}} for details on output
+##' @seealso \code{\link{grepict}}, \code{\link[base]{grepl}}
+grepict_rigid <- function(pattern, x = NULL, data, ...,
                              long = TRUE, verbose = TRUE, paste.alias = TRUE){
     ## -- sanity checks
     .required_properties(x = verbose, class = "logical", length = 1)
-    if(verbose) cat("\n [Function dm::time_match_rigid is verbose]\n Checking arguments and data\n")
+    if(verbose) cat("\n [Function dm::grepict_rigid is verbose]\n Checking arguments and data\n")
     .required_properties(x = long, class = "logical", length = 1)
     .required_properties(x = paste.alias, class = "logical", length = 1)
     .required_properties(x = pattern, class = "character", length = 1)
@@ -179,12 +178,10 @@ time_match_rigid <- function(pattern, x = NULL, data, ...,
     }
 }
 
-##' find matches for specific units on variables in a given time period
-##'
-##' in a dataset with one or more variables (typically containing text)
+##' @title grep by individual contrained by time
+##' @description in a dataset with one or more variables (typically containing text)
 ##'     associated with a date, find matches on those variables for specific
 ##'     individuals within specifed time frames
-##'
 ##' @param pattern a vector of search strings (regular expressions) (the names
 ##'     attribute will be used if it exists)
 ##' @param x names of variables to search in (given in order of importance), if
@@ -246,14 +243,14 @@ time_match_rigid <- function(pattern, x = NULL, data, ...,
 ##'     suffix, either the names of the pattern vector, or a created one.
 ##'
 ##' @export
-time_match <- function(pattern, x = NULL, data, id = 'id', date = 'date',
+grepict <- function(pattern, x = NULL, data, id = 'id', date = 'date',
                        units = NULL, units.id = id, begin = 'begin',
                        end = 'end', ..., long = TRUE, stack = TRUE,
                        verbose = TRUE){
     .required_properties(verbose, class = "logical", length = 1, nm = "verbose")
-    if(verbose) cat("\n [Function dm::time_match_set set to verbose.]\n",
+    if(verbose) cat("\n [Function dm::grepict set to verbose.]\n",
                     "Checking arguments and preparing data before calling",
-                    "time_match...\n")
+                    "grepict...\n")
     .required_data_names(data.names = names(data),
                          required = c(id, date, x))
     data.begin <- if(class(begin) == "Date"){
@@ -342,10 +339,10 @@ time_match <- function(pattern, x = NULL, data, id = 'id', date = 'date',
     names(data) <- c("id", "date", x, keep)
     DATA <- merge(units, data, by = 'id', all.x = TRUE, sort = FALSE)
     DATA$date[is.na(DATA$date)] <- max(DATA$end, na.rm = TRUE)
-    ## -- pass to time_match_rigid
+    ## -- pass to grepict_rigid
     .dots <- list(...) ## .dots <- as.list(NULL)
     if(length(pattern) == 1){
-        do.call(time_match_rigid,
+        do.call(grepict_rigid,
                 args = c(list('pattern' = pattern, 'x' = x, 'data' = DATA,
                               'long' = long, 'verbose' = verbose,
                               'paste.alias' = TRUE),
@@ -367,7 +364,7 @@ time_match <- function(pattern, x = NULL, data, id = 'id', date = 'date',
             if(verbose) cat("\n Searching for regular expression:", pattern[i],
                             "\n", paste(rep("=", options("width")$width-2),
                                         collapse = ""))
-            tm <- do.call(time_match_rigid,
+            tm <- do.call(grepict_rigid,
                 args = c(list('pattern' = pattern[i], 'x' = x, 'data' = DATA,
                               'long' = long, 'verbose' = verbose,
                               'paste.alias' = paste.alias),
@@ -470,46 +467,46 @@ if(FALSE){
     Set <- Set[sample(seq_along(Set)), ]
 
     ## match all
-    time_match(data = df, pattern = '.', x = c('baz', 'quuz'), id = 'foo',
+    grepict(data = df, pattern = '.', x = c('baz', 'quuz'), id = 'foo',
                date = 'bar', units = Set, units.id = 'ID', begin = 'arrival',
                end = 'death.date', long = FALSE, stack = FALSE, verbose = TRUE)
 
-    time_match(data = df, pattern = '.', x = c('baz', 'quuz'), id = 'foo',
+    grepict(data = df, pattern = '.', x = c('baz', 'quuz'), id = 'foo',
                date = 'bar', units = Set, units.id = 'ID', begin = 'arrival',
                end = 'death.date', long = TRUE, stack = TRUE, verbose = TRUE)
 
-    time_match(data = df, pattern = '.', x = c('baz', 'quuz'), id = 'foo',
+    grepict(data = df, pattern = '.', x = c('baz', 'quuz'), id = 'foo',
                date = 'bar', units = Set, units.id = 'ID', begin = 'arrival',
                end = 'death.date', long = FALSE, stack = TRUE, verbose = TRUE)
 
     ## match all, twice
-    time_match(data = df, pattern = c('.', '.*'),
+    grepict(data = df, pattern = c('.', '.*'),
                x = c('baz', 'quuz'), id = 'foo',
                date = 'bar', units = Set, units.id = 'ID', begin = 'arrival',
                end = 'death.date', long = FALSE, stack = FALSE, verbose = TRUE)
 
-    time_match(data = df, pattern = c('.', '.*'),
+    grepict(data = df, pattern = c('.', '.*'),
                x = c('baz', 'quuz'), id = 'foo',
                date = 'bar', units = Set, units.id = 'ID', begin = 'arrival',
                end = 'death.date', long = TRUE, stack = TRUE, verbose = TRUE)
 
-    time_match(data = df, pattern = c('.', '.*'),
+    grepict(data = df, pattern = c('.', '.*'),
                x = c('baz', 'quuz'), id = 'foo',
                date = 'bar', units = Set, units.id = 'ID', begin = 'arrival',
                end = 'death.date', long = FALSE, stack = TRUE, verbose = TRUE)
 
     ## match some
-    time_match(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
+    grepict(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
                x = c('baz', 'quuz'), id = 'foo',
                date = 'bar', units = Set, units.id = 'ID', begin = 'arrival',
                end = 'death.date', long = FALSE, stack = FALSE, verbose = TRUE)
 
-    time_match(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
+    grepict(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
                x = c('baz', 'quuz'), id = 'foo',
                date = 'bar', units = Set, units.id = 'ID', begin = 'arrival',
                end = 'death.date', long = TRUE, stack = TRUE, verbose = TRUE)
 
-    time_match(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
+    grepict(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
                x = c('baz', 'quuz'), id = 'foo',
                date = 'bar', units = Set, units.id = 'ID', begin = 'arrival',
                end = 'death.date', long = FALSE, stack = TRUE, verbose = TRUE)
@@ -528,48 +525,48 @@ if(FALSE){
     ## verbose = TRUE
 
     ## use set dates
-    time_match(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
+    grepict(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
                x = c('baz', 'quuz'), id = 'foo',
                date = 'bar', units = Set, units.id = 'ID',
                begin = as.Date('2000-01-01'), end = as.Date('2001-12-31'),
                long = FALSE, stack = FALSE, verbose = FALSE)
 
-    time_match(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
+    grepict(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
                x = c('baz', 'quuz'), id = 'foo',
                date = 'bar', units = Set, units.id = 'ID',
                begin = as.Date('2000-01-01'), end = as.Date('2001-12-31'),
                long = TRUE, stack = TRUE, verbose = FALSE)
 
-    time_match(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
+    grepict(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
                x = c('baz', 'quuz'), id = 'foo',
                date = 'bar', units = Set, units.id = 'ID',
                begin = as.Date('2000-01-01'), end = as.Date('2001-12-31'),
                long = FALSE, stack = TRUE, verbose = FALSE)
 
     ## use set dates, vector of id's
-    time_match(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
+    grepict(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
                x = c('baz', 'quuz'), id = 'foo', date = 'bar',
                units = Set$ID, begin = as.Date('2000-01-01'),
                end = as.Date('2001-12-31'), verbose = FALSE)
 
     ## vector of id's
-    time_match(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
+    grepict(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
                x = c('baz', 'quuz'), id = 'foo', date = 'bar',
                units = Set$ID, verbose = FALSE)
 
     ## vector of id's
-    time_match(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
+    grepict(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
                x = c('baz', 'quuz'), id = 'foo', date = 'bar',
                units = Set$ID, verbose = FALSE)
 
     ## 'incomplete' units
-    time_match(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
+    grepict(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
                x = c('baz', 'quuz'), id = 'foo', date = 'bar',
                units = Set[, c('ID', 'arrival')], units.id = 'ID',
                begin = 'arrival', end = 'death.date', verbose = FALSE)
 
     ## 'incomplete' units
-    time_match(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
+    grepict(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
                x = c('baz', 'quuz'), id = 'foo', date = 'bar',
                units = Set[, c('ID', 'death.date')], units.id = 'ID',
                begin = 'arrival', end = 'death.date', verbose = FALSE)
@@ -587,47 +584,47 @@ if(FALSE){
     df <- df[sample(seq_along(nrow(df))), ]
 
     ## all matches
-    time_match_rigid(data = df, pattern = '.', x = c('baz', 'quuz'),
+    grepict_rigid(data = df, pattern = '.', x = c('baz', 'quuz'),
                       long = TRUE, verbose = TRUE)
-    time_match_rigid(data = df, pattern = '.', x = c('baz', 'quuz'),
+    grepict_rigid(data = df, pattern = '.', x = c('baz', 'quuz'),
                      long = FALSE, verbose = TRUE)
-    time_match_rigid(data = df, pattern = setNames('.', "ALL"), x = c('baz', 'quuz'),
+    grepict_rigid(data = df, pattern = setNames('.', "ALL"), x = c('baz', 'quuz'),
                       long = FALSE, verbose = TRUE)
-    time_match_rigid(data = df, pattern = setNames('.', "ALL"), x = c('baz', 'quuz'),
+    grepict_rigid(data = df, pattern = setNames('.', "ALL"), x = c('baz', 'quuz'),
                       long = FALSE, verbose = TRUE, paste.alias = FALSE)
 
     ## non matches
-    time_match_rigid(data = df, pattern = 'q', x = c('baz', 'quuz'),
+    grepict_rigid(data = df, pattern = 'q', x = c('baz', 'quuz'),
                       long = TRUE, verbose = TRUE)
-    time_match_rigid(data = df, pattern = 'q', x = c('baz', 'quuz'),
+    grepict_rigid(data = df, pattern = 'q', x = c('baz', 'quuz'),
                       long = FALSE, verbose = TRUE)
-    time_match_rigid(data = df, pattern = setNames('q', "NONE"), x = c('baz', 'quuz'),
+    grepict_rigid(data = df, pattern = setNames('q', "NONE"), x = c('baz', 'quuz'),
                      long = FALSE, verbose = TRUE)
-    time_match_rigid(data = df, pattern = setNames('q', "NONE"), x = c('baz', 'quuz'),
+    grepict_rigid(data = df, pattern = setNames('q', "NONE"), x = c('baz', 'quuz'),
                       long = FALSE, verbose = TRUE, paste.alias = FALSE)
 
     ## some matches
-    time_match_rigid(data = df, pattern = 'a', x = c('baz'),
+    grepict_rigid(data = df, pattern = 'a', x = c('baz'),
                       long = TRUE, verbose = TRUE)
-    time_match_rigid(data = df, pattern = 'a', x = c('baz'),
+    grepict_rigid(data = df, pattern = 'a', x = c('baz'),
                       long = FALSE, verbose = TRUE)
-    time_match_rigid(data = df, pattern = setNames('a', "TheA"), x = c('baz'),
+    grepict_rigid(data = df, pattern = setNames('a', "TheA"), x = c('baz'),
                       long = FALSE, verbose = TRUE)
 
     ## wrong case, but ignored
-    time_match_rigid(data = df, pattern = 'A', x = c('baz'),
+    grepict_rigid(data = df, pattern = 'A', x = c('baz'),
                       long = TRUE, ignore.case = TRUE, verbose = TRUE)
-    time_match_rigid(data = df, pattern = 'A', x = c('baz'),
+    grepict_rigid(data = df, pattern = 'A', x = c('baz'),
                       long = FALSE, ignore.case = TRUE, verbose = TRUE)
-    time_match_rigid(data = df, pattern = setNames('A', "TheA"), x = c('baz'),
+    grepict_rigid(data = df, pattern = setNames('A', "TheA"), x = c('baz'),
                       long = FALSE, ignore.case = TRUE, verbose = TRUE)
 
     ## test
-    time_match_rigid(data = df, pattern = '1', x = c('time'),
+    grepict_rigid(data = df, pattern = '1', x = c('time'),
                       long = TRUE, verbose = TRUE)
-    time_match_rigid(data = df, pattern = 'x', x = c('time'),
+    grepict_rigid(data = df, pattern = 'x', x = c('time'),
                       long = FALSE, verbose = TRUE)
-    time_match_rigid(data = df, pattern = setNames('x', "dieX"), x = c('time'),
+    grepict_rigid(data = df, pattern = setNames('x', "dieX"), x = c('time'),
                      long = FALSE, verbose = TRUE)
 
     ##

@@ -13,12 +13,7 @@ dm_recode2latex <- function(doc = NULL, file = "",
                             lab.prefix = "tab:recode_",
                             where = "htb", clearpage = NULL, ...){
     if(is.null(doc)) doc <- dm_doc()
-    if(length(doc) == 0) stop("[dm_create] doc empty")
-    ## texify <- function(s) if(length(s)) {
-    ##                          gsub("_", "\\_",
-    ##                               paste0("\\texttt{", s, "}"),
-    ##                               fixed=TRUE )
-    ##                      } else ""
+    if(length(doc) == 0) stop("doc empty")
     dummy <- 0
     if(!is.null(clearpage)) clearpage <- cumsum(rep(clearpage, length(doc)))
     for(k in seq_along(doc)){
@@ -49,7 +44,7 @@ dm_recode2latex <- function(doc = NULL, file = "",
                          ...)
         } else {
             cat("Error-ish\n")
-            warning("[dataman::data_man_get_recode] package Hmisc not available")
+            warning("package Hmisc not available")
         }
         dummy <- dummy + 1
         if(dummy %in% clearpage) cat("\n\\clearpage\n")
@@ -68,7 +63,6 @@ texify <- function(s, f = "\\texttt"){
 ##  #' @title Recoded variables
 ##  #' @description Get the names of the variables that have been recoded
 ##  #' @param doc the 'data_man' doc
-##  #' @author Henrik Renlund
 ##  #' @export
 
 ## dm_recoded <- function(doc){
