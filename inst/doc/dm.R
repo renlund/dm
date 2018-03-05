@@ -47,7 +47,8 @@ BL <- data.frame(
                        label = "Age at some time",
                        foo = 'whatever'),
     vikt = rpois(n, 50),
-    gr = sample(c('A1', 'A2', 'B1', 'c', 'unknown'), n, TRUE),
+    gr = sample(c('A', 'A2', 'B', 'C', 'D', 'd1', 'unknown'),
+                n, TRUE),
     koon = structure(sample(c('M', 'K'), n, T),
                      label = "The Sex"),
     nar = as.Date("2001-01-01") + runif(n, 0, 3650),
@@ -72,8 +73,17 @@ dm_find(pattern = 'time') ## looks in names and labels
 opts_dm$set('default_db' = 'BL')
 
 ## ----"add-gender"--------------------------------------------------------
-dm('koon', 'Gender',
-   recode = list('Male' = 'M', 'Female' = 'K'))
+## 'gr' will be recoded in a more complex way
+L <- list('A' = 'A2',
+          'B' = NULL, ## placeholder to get the order right
+          'CD' = c('C', 'D', 'd1'),
+          'Unknown' = c('unknown', NA))
+## # this would also work:
+## L <- list('A' = c('A', 'A2'),
+##           'B' = 'B',
+##           'CD' = c('C', 'D', 'd1', 'something not in data'),
+##           'Unknown' = c('unknown', NA))
+dm('gr', recode = L, label = 'Group')
 
 ## ----"add-rest", echo = TRUE, results = 'hide'---------------------------
 dm('aalder', 'Age')
@@ -82,11 +92,8 @@ dm('foo', 'event', db = 'COMP',
    recode = list('No' = '0', 'Yes' = 1),
    label = "An event at some time")
 dm('bar', 'time', db = 'COMP', transf = log)
-## 'gr' will be recoded in a more complex way
-L <- list('A' = c('A1', 'A2'),
-          'BC' = c('B1', 'c'),
-          'Unknown' = c('unknown', NA))
-dm('gr', recode = L, label = 'Group')
+dm('koon', 'Gender',
+   recode = list('Male' = 'M', 'Female' = 'K'))
 
 ## ----"create"------------------------------------------------------------
 ADB <- dm_create(set = BL$id,
@@ -106,4 +113,120 @@ dm_recode2latex()
 ## ----"variable-overview",eval = FALSE------------------------------------
 #  d <- print(dm_doc(), print = FALSE)
 #  lapply(dm_doc(), FUN = function(x) x$recode_table)
+
+## ----'generate-data'-----------------------------------------------------
+POP <- data.frame(
+    id = c('Anna', 'Barry', 'Christina',
+           'David', 'Esteban'),
+    enter = as.Date(c('2010-01-01', '2010-02-01', '2010-03-01',
+                      '2010-04-01', '2010-05-01'))
+)
+RECORDS <- data.frame(
+    identity = c('Barry', 'Christina', 'David',
+           'David', 'David', 'Esteban',
+           'Other', 'Other'),
+    what1 = c('headache', 'bar type I', 'nausea',
+             'percutaneous foo', 'quuz', '',
+             'other foo', 'other bar'),
+    what2 = c('mild foo', 'bar type II', 'severe bar',
+             'subcutaneous foo', NA, 'bar-ish',
+             'yet other foo', 'yet other bar'),
+    what.date = as.Date(c('2010-01-07', '2010-07-23', '1998-06-27',
+                          '1996-10-12', '2011-01-18', '2011-05-03',
+                          '1999-12-01', '2010-06-01'))
+)[sample(1:8),]
+options('knitr.kable.NA' = '')
+
+## ----'show-POP'----------------------------------------------------------
+POP
+RECORDS
+
+## ----'find-mh'-----------------------------------------------------------
+
+searchString <- c('Foo' = 'foo', 'Bar' = 'bar', 'Quuz' = 'quuz')
+
+tm <- time_match(
+    pattern = searchString, ## what to search for
+    x = c('what1', 'what2'), ## search variables in 'data'
+    data = RECORDS, ## data set to search in
+    id = 'identity', ## name of id variable in 'data'
+    date = 'what.date', ## name of date variable in 'data'
+    units = POP, ## data set, or vector, containing individuals
+    units.id = 'id', ## name of id variable in 'units'
+    begin = NULL, ## earliest date to search from
+    end = 'enter', ## name of lates date to search,
+    ## long = TRUE, ## long output format is default
+    ## stack = TRUE, ## stacked results are default
+    verbose = FALSE ## give calculation progress info?
+)
+
+
+## ----'show-mh', results = 'asis'-----------------------------------------
+tm[, c('id', 'event', 'alias', 'match', 'match.in', 'first.id')]
+
+## ----'mh-fix'------------------------------------------------------------
+tmp <- subset(tm, first.id == 1, select = c('id', 'event', 'alias'))
+(medhist <- reshape(tmp, idvar = 'id', timevar = c('alias'), direction = 'wide'))
+names(medhist) <- gsub("event", "prior", names(medhist), fixed = TRUE)
+
+## ----'show-mh-fixed'-----------------------------------------------------
+medhist
+
+## ----'find-outcomes'-----------------------------------------------------
+
+POP$endofstudy <- POP$enter + 365
+tm2 <- time_match(pattern = searchString, x = c('what1', 'what2'),
+                  data = RECORDS, id = 'identity', date = 'what.date',
+                  units = POP, units.id = 'id',
+                  begin = 'enter', ## earliest date to search from
+                  end = 'endofstudy', ## name of lates date to search,
+                  verbose = FALSE)
+
+
+## ----'show-outcomes'-----------------------------------------------------
+tm2[, c('id', 'event', 'time', 'alias', 'match', 'match.in')]
+
+## ----'outcomes-fix'------------------------------------------------------
+tmp2 <- subset(tm2, first.id == 1, select = c('id', 'event', 'time', 'alias'))
+(outcomes <- reshape(tmp2, idvar = 'id', timevar = c('alias'), direction = 'wide'))
+names(outcomes) <- gsub("event", "ev", names(outcomes), fixed = TRUE)
+names(outcomes) <- gsub("time", "t", names(outcomes), fixed = TRUE)
+
+## ----'show-outcomes-fixed'-----------------------------------------------
+outcomes
+
+## ----'other'-------------------------------------------------------------
+tm3 <- time_match(pattern = searchString, x = c('what1', 'what2'),
+                  data = RECORDS, id = 'identity', date = 'what.date',
+                  units = POP, units.id = 'id', begin = 'enter',
+                  end = 'endofstudy',
+                  long = FALSE, ## wide output format
+                  stack = TRUE, ## stack
+                  verbose = FALSE
+)
+str(tm3)
+
+## ----'other-tab'---------------------------------------------------------
+val <- c('id', 'alias', 'event', 'time', 'events', 'matches.info')
+tm3[, val]
+
+## ----'other2'------------------------------------------------------------
+tm4 <- time_match(pattern = searchString, x = c('what1', 'what2'),
+                  data = RECORDS, id = 'identity', date = 'what.date',
+                  units = POP, units.id = 'id', begin = 'enter',
+                  end = 'endofstudy',
+                  long = FALSE, ## wide output format
+                  stack = FALSE, ## don't stack
+                  verbose = FALSE
+)
+str(tm4)
+
+## ----'other2-tab'--------------------------------------------------------
+val <- c('id', names(tm4)[grepl("event|time", names(tm4))])
+tm4[, val[!grepl("Foo", val)]]
+
+## ----"cdate"-------------------------------------------------------------
+cdate(x = c("20010101", "20010100", "20010000"))
+cdate(x = c("20010101", "20010100", "20010000"),
+      low.bound = as.Date(c("1999-01-01", "2001-01-21", "2001-06-20")))
 

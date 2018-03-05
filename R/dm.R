@@ -6,14 +6,15 @@
 #'     data base.
 #' @param var character, database/data frame entry
 #' @param name character, (new) name of variable, will be 'var' if unspecified
-#' @param db character, name of data frame, if \code{NULL}, will look for default setting in
-#'     \code{opts_dm$get('default_db')}.
+#' @param db character, name of data frame, if \code{NULL}, will look for
+#'     default setting in \code{opts_dm$get('default_db')}.
 #' @param recode recode \code{L} argument for recoding
 #' @param transf function, for transformation
 #' @param comment character, a comment or some such extra information
-#' @param label character, something to be stored as label attribute for this variable
-#' @param keep.label logical, if \code{var} has a label in \code{db}, should it be kept?
-#'     (only if \code{label} is \code{NULL})
+#' @param label character, something to be stored as label attribute for this
+#'     variable
+#' @param keep.label logical, if \code{var} has a label in \code{db}, should it
+#'     be kept?  (only if \code{label} is \code{NULL})
 #' @export
 dm <- function(var, name = var, db = NULL, recode = NULL, transf = NULL,
                comment = NULL, label = NULL, keep.label = TRUE){
@@ -106,7 +107,7 @@ dm <- function(var, name = var, db = NULL, recode = NULL, transf = NULL,
     if(any(class_x %in% c("numeric", "integer"))){
         txt <- paste0(
             "\nSummary of numeric variable:",
-            "\n    min:    ", signif(min(x, na.rm=T), 3),
+            "\n    min:    ", signif(min(x, na.rm=TRUE), 3),
             "\n    max:    ", signif(max(x, na.rm=TRUE), 3),
             "\n    mean:   ", signif(mean(x, na.rm=TRUE), 3),
             "\n    median: ", signif(stats::median(x, na.rm=TRUE), 3), "\n"
@@ -179,7 +180,8 @@ print.dm <- function(x, ..., print = TRUE){
 ##' @param which columns to print
 ##' @param code.key formatting code key
 ##' @export
-dm_doc2latex <- function(doc = NULL, file = "", where = "htb", rowname = NULL, ...,
+dm_doc2latex <- function(doc = NULL,
+                         file = "", where = "htb", rowname = NULL, ...,
                          which = c('name', 'var', 'db', 'label', 'comment'),
                          code.key = c('name' = '\\texttt',
                                       'var'  = '\\texttt',

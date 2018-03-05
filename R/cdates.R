@@ -1,8 +1,8 @@
 ##' @title fix censored dates
-##' @description fix censored dates of the type '20110000' or '20110200' by selecting the
-##'     midpoint of the censored time interval. If a lower bound is given, the
-##'     midpoint between this point and the end of the censored interval is
-##'     chosen.
+##' @description fix censored dates of the type '20110000' or '20110200' by
+##'     selecting the midpoint of the censored time interval. If a lower bound
+##'     is given, the midpoint between this point and the end of the censored
+##'     interval is chosen.
 ##' @param x dates
 ##' @param sep seprator in x, if any
 ##' @param low.bound the lower bound
@@ -77,7 +77,9 @@ fix.single.cdate <- function(x, sep = NULL, low.bound = NULL, ok.years = NULL){
         }
     }
     if(!(m==0 | d == 0)) stop("unknown weirdness")
-    if(y < ref_y | (ref_y == y & m > 0 & m < ref_m)) stop("date before lower bound!")
+    if(y < ref_y | (ref_y == y & m > 0 & m < ref_m)){
+        stop("date before lower bound!")
+    }
     if(ref_m == 0) ref_m <- 1
     if(ref_d == 0) ref_d <- 1
     ref_date <- create_date(max(ref_y, y), max(ref_m, m), max(ref_d, d))

@@ -31,7 +31,7 @@ if(FALSE){ ## create document
 \newpage
 \section{\texttt{dm} and related functions}
 
-\subsection{The problem that is trying to be solved}
+\subsection{The problem we want to solve}
 A statistical report sometimes build an \emph{analytical data base} (ADB) from
 multiple sources, variables that might need to be renamed and (if categorical)
 recoded (and possibly transformed), the documentation of which is
@@ -138,7 +138,8 @@ BL <- data.frame(
                        label = "Age at some time",
                        foo = 'whatever'),
     vikt = rpois(n, 50),
-    gr = sample(c('A1', 'A2', 'B1', 'c', 'unknown'), n, TRUE),
+    gr = sample(c('A', 'A2', 'B', 'C', 'D', 'd1', 'unknown'),
+                n, TRUE),
     koon = structure(sample(c('M', 'K'), n, T),
                      label = "The Sex"),
     nar = as.Date("2001-01-01") + runif(n, 0, 3650),
@@ -162,15 +163,29 @@ db_info(BL) ## prints names and 'label' attributes
 dm_find(pattern = 'time') ## looks in names and labels
 @
 
-Most variables of interest are in \verb|BL| so set this as deault.
+Most variables of interest are in \verb|BL| so set this as default.
 <<"default">>=
 opts_dm$set('default_db' = 'BL')
 @
 
-Next, we add the first variable (and view the output)
+Next, we add the first variable (and view the output). We've chosen a variable
+with a fairly complex recoding to also illustrate the use the \verb|recode|
+argument (also see the help for the \verb|recode| function that is being
+utilized). \verb|L| is a list where each entry has a vector of levels that will
+aquire the name of that entry, where the order of entries will be the order of
+the levels.
 <<"add-gender">>=
-dm('koon', 'Gender',
-   recode = list('Male' = 'M', 'Female' = 'K'))
+## 'gr' will be recoded in a more complex way
+L <- list('A' = 'A2',
+          'B' = NULL, ## placeholder to get the order right
+          'CD' = c('C', 'D', 'd1'),
+          'Unknown' = c('unknown', NA))
+## # this would also work:
+## L <- list('A' = c('A', 'A2'),
+##           'B' = 'B',
+##           'CD' = c('C', 'D', 'd1', 'something not in data'),
+##           'Unknown' = c('unknown', NA))
+dm('gr', recode = L, label = 'Group')
 @
 
 Next, we add some more variables (but hide the output)
@@ -181,11 +196,8 @@ dm('foo', 'event', db = 'COMP',
    recode = list('No' = '0', 'Yes' = 1),
    label = "An event at some time")
 dm('bar', 'time', db = 'COMP', transf = log)
-## 'gr' will be recoded in a more complex way
-L <- list('A' = c('A1', 'A2'),
-          'BC' = c('B1', 'c'),
-          'Unknown' = c('unknown', NA))
-dm('gr', recode = L, label = 'Group')
+dm('koon', 'Gender',
+   recode = list('Male' = 'M', 'Female' = 'K'))
 @
 When we are done, we create the ADB with
 
@@ -217,6 +229,283 @@ the recodings with, respectively,
 d <- print(dm_doc(), print = FALSE)
 lapply(dm_doc(), FUN = function(x) x$recode_table)
 @
+
+
+\newpage
+\section{\texttt{time\_match}}
+
+\subsection{The problem we want to solve}
+Suppose you have a set of units in a data set, and another data set where each
+unit may occur none or serveral times, each row associated with a date and one
+or more variables that contains some kind of information you want to search. For
+each unit we want to find matches in this information within some specified time
+range.
+
+The function was specifically written to deal with this situation: the units are
+selected to be part of some study cohort, possible with different start and end
+times. Another data set exists which contains the medical records of (some
+possibly larger) population. At least two tasks are commonly associated with
+creating an analytical data base:
+\begin{itemize}
+\item Find the medical history of each individual, i.e.\ look for codes
+  pertaining to different diagnosis that appear before the individual is entered
+  into the cohort.
+\item Find diagnosis that appear after the individual is entered into the study
+  (and possibly before some end date).
+\end{itemize}
+
+\subsection{An example}
+\subsubsection{Generate data}
+Our cohort will consists of some individuals entering a study during the year
+2010, with no longer than one year follow-up.
+\begin{itemize}
+\item Anna enters 2010-01-01, with no medical history or outcomes,
+\item Barry enter 2010-02-01, with a previous 'foo', but no outcome,
+\item Christina enters 2010-03-01, with no medical history but a later 'bar',
+\item David enters 2010-04-01, with a medical history of both 'bar' and 'foo',
+  as well as a later 'quuz',
+\item Esteban enters 2010-05-01, with no medical history and an outcome 'bar'
+  \emph{after} the end of follow-up.
+\end{itemize}
+Moreover, the medical history is to be found in two different variables.
+
+<<'generate-data'>>=
+POP <- data.frame(
+    id = c('Anna', 'Barry', 'Christina',
+           'David', 'Esteban'),
+    enter = as.Date(c('2010-01-01', '2010-02-01', '2010-03-01',
+                      '2010-04-01', '2010-05-01'))
+)
+RECORDS <- data.frame(
+    identity = c('Barry', 'Christina', 'David',
+           'David', 'David', 'Esteban',
+           'Other', 'Other'),
+    what1 = c('headache', 'bar type I', 'nausea',
+             'percutaneous foo', 'quuz', '',
+             'other foo', 'other bar'),
+    what2 = c('mild foo', 'bar type II', 'severe bar',
+             'subcutaneous foo', NA, 'bar-ish',
+             'yet other foo', 'yet other bar'),
+    what.date = as.Date(c('2010-01-07', '2010-07-23', '1998-06-27',
+                          '1996-10-12', '2011-01-18', '2011-05-03',
+                          '1999-12-01', '2010-06-01'))
+)[sample(1:8),]
+options('knitr.kable.NA' = '')
+@
+
+The data is tabulated below
+<<'show-POP'>>=
+POP
+RECORDS
+@
+
+\subsubsection{Medical history}
+Now we'll find the medical history of this cohort. We will need to point to the
+relevant variables in the different data sets, in \verb|RECORDS| we need to
+point to \verb|identity|, \verb|date| and \verb|what.date|. In \verb|POP| we
+need to point to \verb|id| and specify the search interval 'begin' and 'end'.
+In this case, we search as far back as we can, which will happen if we set
+'begin' to \verb|NULL|. We'll search all the way until the beginning of the
+study (which is coded in \verb|enter| in the data frame).
+
+There are options for the output format, but typicall we want a stacked long
+format (which will be default).
+
+<<'find-mh'>>=
+
+searchString <- c('Foo' = 'foo', 'Bar' = 'bar', 'Quuz' = 'quuz')
+
+tm <- time_match(
+    pattern = searchString, ## what to search for
+    x = c('what1', 'what2'), ## search variables in 'data'
+    data = RECORDS, ## data set to search in
+    id = 'identity', ## name of id variable in 'data'
+    date = 'what.date', ## name of date variable in 'data'
+    units = POP, ## data set, or vector, containing individuals
+    units.id = 'id', ## name of id variable in 'units'
+    begin = NULL, ## earliest date to search from
+    end = 'enter', ## name of lates date to search,
+    ## long = TRUE, ## long output format is default
+    ## stack = TRUE, ## stacked results are default
+    verbose = FALSE ## give calculation progress info?
+)
+
+@
+
+\verb|time_match| will return a data frame with many variables and, with
+this configuration, at least one row per individual and search string,
+and possibly as many as one per search string times variable searched in.
+Output (names are fixed):
+\begin{itemize}
+\item \verb|id| the identifier
+\item \verb|begin| first date searched from (inclusive)
+\item \verb|end| last date searched untill (inclusive)
+\item \verb|date| the date of the match
+\item \verb|event| indicator for match
+\item \verb|time| days between \verb|begin| and \verb|date|
+\item \verb|match| that which matched
+\item \verb|match.in| name of variable of match
+\item \verb|pattern| pattern searched for
+\item \verb|alias| name of pattern searched for
+\item \verb|first.id| indicator for the first match for each individual and pattern
+\item \verb|first.id_date| indicator for the first match for each individual, date and pattern
+\end{itemize}
+
+A few of these are tabulated below.
+
+<<'show-mh', results = 'asis'>>=
+tm[, c('id', 'event', 'alias', 'match', 'match.in', 'first.id')]
+@
+\vspace{0.5cm}
+
+For the history, we typically only care whether at least one instance of each
+search term is found. Also, we might want to transform this to a wide format.
+
+<<'mh-fix'>>=
+tmp <- subset(tm, first.id == 1, select = c('id', 'event', 'alias'))
+(medhist <- reshape(tmp, idvar = 'id', timevar = c('alias'), direction = 'wide'))
+names(medhist) <- gsub("event", "prior", names(medhist), fixed = TRUE)
+@
+
+Now, we have a data frame containing the relevant medical history
+
+<<'show-mh-fixed'>>=
+medhist
+@
+
+\subsubsection{Outcomes}
+Next, we'll look at outcomes. Since the end of study is
+variable, we'll have to create this variable, lets call it \verb|endofstudy|.
+Note: if we want to start the search one day after \verb|enter| we'll have to
+create this delayed start as a variable. Search dates are inclusive.
+
+<<'find-outcomes'>>=
+
+POP$endofstudy <- POP$enter + 365
+tm2 <- time_match(pattern = searchString, x = c('what1', 'what2'),
+                  data = RECORDS, id = 'identity', date = 'what.date',
+                  units = POP, units.id = 'id',
+                  begin = 'enter', ## earliest date to search from
+                  end = 'endofstudy', ## name of lates date to search,
+                  verbose = FALSE)
+
+@
+
+For the outcomes, we probably care about more things, especially time-to-event.
+The event and time variables now serve as right-censored data for each outcome.
+
+<<'show-outcomes'>>=
+tm2[, c('id', 'event', 'time', 'alias', 'match', 'match.in')]
+@
+\vspace{0.5cm}
+
+We'll assume that we only case about the first instance of each outcome.
+
+<<'outcomes-fix'>>=
+tmp2 <- subset(tm2, first.id == 1, select = c('id', 'event', 'time', 'alias'))
+(outcomes <- reshape(tmp2, idvar = 'id', timevar = c('alias'), direction = 'wide'))
+names(outcomes) <- gsub("event", "ev", names(outcomes), fixed = TRUE)
+names(outcomes) <- gsub("time", "t", names(outcomes), fixed = TRUE)
+@
+
+Now, we have a data frame containing the relevant medical history
+
+<<'show-outcomes-fixed'>>=
+outcomes
+@
+
+\clearpage
+\subsection{Other output}
+I'm thinking\ldots maybe not use these?
+
+\subsubsection{Wide and stacked}
+With a wide, stacked output, we get one row per individual and search.  We get
+some information on the first match - all information from the long stacked
+format, except \verb|first.id| and \verb|first.id_date| - and some summary
+information on all matches:
+\begin{itemize}
+\item \verb|events| which counts the matches,
+\item \verb|matches| which concatenates the matches, and
+\item \verb|matches.info| which stores a concatenation of
+  \emph{match}:\emph{math.in}:\emph{date} for all matches.
+\end{itemize}
+
+<<'other'>>=
+tm3 <- time_match(pattern = searchString, x = c('what1', 'what2'),
+                  data = RECORDS, id = 'identity', date = 'what.date',
+                  units = POP, units.id = 'id', begin = 'enter',
+                  end = 'endofstudy',
+                  long = FALSE, ## wide output format
+                  stack = TRUE, ## stack
+                  verbose = FALSE
+)
+str(tm3)
+@
+
+Also, selected info tabulated below.
+
+<<'other-tab'>>=
+val <- c('id', 'alias', 'event', 'time', 'events', 'matches.info')
+tm3[, val]
+@
+
+\clearpage
+\subsubsection{Wide and unstacked}
+With a wide and unstacked output, we get all variables (from the wide stacked
+output) \emph{for each search term} - except \verb|id|, \verb|begin| and \verb|end|
+which are the same for all rows - with the name of the search term as suffix (or
+a naming scheme if no names are supplied).
+
+Below you can see the structure
+
+<<'other2'>>=
+tm4 <- time_match(pattern = searchString, x = c('what1', 'what2'),
+                  data = RECORDS, id = 'identity', date = 'what.date',
+                  units = POP, units.id = 'id', begin = 'enter',
+                  end = 'endofstudy',
+                  long = FALSE, ## wide output format
+                  stack = FALSE, ## don't stack
+                  verbose = FALSE
+)
+str(tm4)
+@
+
+Also, selected info on the Bar- and Quuz outcome tabulated.
+
+<<'other2-tab'>>=
+val <- c('id', names(tm4)[grepl("event|time", names(tm4))])
+tm4[, val[!grepl("Foo", val)]]
+@
+
+
+\newpage
+\section{Other functions}
+
+\subsection{\texttt{cdate}}
+\verb|cdate| is a function to handle dates of the form ``20010700'' or
+``20010000'', which can appear as dates of death when the precise date is
+unknown. If nothing else is known this function will replace an unknown
+\begin{itemize}
+\item day of the month with the midpoint of that month, and
+\item month (and day) with the midpoint of that year.
+\end{itemize}
+
+Sometimes, there is another date for an individual when the individual was known
+to be alive. In the applications of most interest to the author it is an
+admission, or discharge, date to a hospital, and thus we believe that the
+individual did \emph{not} die at the hospital (else the date of death would be
+known), therefore the replacement date will be the midpoint of whatever remains
+of the unknown period, e.g if we encounter date of death as ``20010100'' with a
+known hospital discharge at 2001-01-21, we will interpret it as 2001-01-26.
+
+Examples:
+<<"cdate">>=
+cdate(x = c("20010101", "20010100", "20010000"))
+cdate(x = c("20010101", "20010100", "20010000"),
+      low.bound = as.Date(c("1999-01-01", "2001-01-21", "2001-06-20")))
+@
+
+
 
 
 %% \clearpage
