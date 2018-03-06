@@ -18,17 +18,16 @@
 ##'     with e.g. \code{dplyr::group_by(tr, cid)} and \code{summarise} with
 ##'     functions using \code{weight = cl.weight} to get stats for weighted
 ##'     treated and control statistics.
-##' @examples df <- data.frame(
+##' @examples
+##' df <- data.frame(
 ##'    id = 1:13,
 ##'    foo = c(0,0,1, 0,1, 1,1,0, 1,1,0,0, 0),
 ##'    bar = c(rep(c(letters[1:4]), c(3,2,3,4)), NA),
 ##'    x = round(runif(13),2)
 ##')
-##' mi <- match_weight(data = df, tr = "foo", cl = "bar")
-##' attributes(mi)
-##' match_weight(data = df, tr = "foo", cl = "bar", id = "id")
+##' str(match_weight(data = df, tr = "foo", cl = "bar", id = "id"))
 ##' df$foo <- ifelse(df$foo == 1, "Treated", "Control")
-##' match_weight(data = df, tr = "foo", cl = "bar", trv = "Treated")
+##' str(match_weight(tr = df$foo, cl = df$bar, id = df$id, trv = "Treated"))
 ##' @export
 match_weight <- function(tr, cl, id, data = NULL, trv = 1){
     if(!is.null(data)){

@@ -42,9 +42,7 @@ df <- data.frame(
    bar = c(rep(c(letters[1:4]), c(3,2,3,4)), NA),
    x = round(runif(13),2)
 )
-mi <- match_weight(data = df, tr = "foo", cl = "bar")
-attributes(mi)
-match_weight(data = df, tr = "foo", cl = "bar", id = "id")
+str(match_weight(data = df, tr = "foo", cl = "bar", id = "id"))
 df$foo <- ifelse(df$foo == 1, "Treated", "Control")
-match_weight(data = df, tr = "foo", cl = "bar", trv = "Treated")
+str(match_weight(tr = df$foo, cl = df$bar, id = df$id, trv = "Treated"))
 }

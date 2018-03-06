@@ -4,7 +4,7 @@
 \alias{dm_create}
 \title{Create data frame from documentation info}
 \usage{
-dm_create(set, id.name, doc = NULL, dplyr = FALSE)
+dm_create(set, id.name, doc = NULL)
 }
 \arguments{
 \item{set}{vector of id's}
@@ -13,8 +13,6 @@ dm_create(set, id.name, doc = NULL, dplyr = FALSE)
 equal to the associated data base}
 
 \item{doc}{if \code{NULL}, we look at \code{dm_doc()}}
-
-\item{dplyr}{use dplyr for merging operations? (Default: \code{FALSE}.)}
 }
 \description{
 use the information stored (by default accessibly in

@@ -5,13 +5,8 @@
 #' @param id.name identifier across data bases or a list of such, with names
 #'     equal to the associated data base
 #' @param doc if \code{NULL}, we look at \code{dm_doc()}
-#' @param dplyr use dplyr for merging operations? (Default: \code{FALSE}.)
 #' @export
-dm_create <- function(set, id.name, doc = NULL, dplyr = FALSE){
-    if(dplyr && !requireNamespace("dplyr")){
-        warning("package dplyr not available")
-        dplyr <- FALSE
-    }
+dm_create <- function(set, id.name, doc = NULL){
     if(is.null(doc)) doc <- dm_doc()
     if(length(doc) == 0) stop("[dm_create] doc empty")
     pdoc <- print.dm(doc, print = FALSE)
@@ -24,7 +19,7 @@ dm_create <- function(set, id.name, doc = NULL, dplyr = FALSE){
     }
     identicalid <- length(id.name) == 1
     the_id <- id.name[[1]]
-    DF <- if(dplyr) dplyr::data_frame(set) else data.frame(set)
+    DF <- data.frame(set)
     names(DF) <- the_id
     for(indx in seq_along(doc)){ # indx <- 1
         cat(paste0("Fixing variable no.", indx, ": ", names(doc)[indx], "\n"))
@@ -35,21 +30,12 @@ dm_create <- function(set, id.name, doc = NULL, dplyr = FALSE){
         tmp <- get(df)[[var]]
         if(!is.null(f <- X$transf.fnc)) tmp <- f(tmp)
         if(!is.null(recode <- X$recode)) tmp <- recode(x=tmp, L=recode)
-        if(dplyr){
-            loc.df <- dplyr::data_frame(
-                tmp,
-                get(df)[[if(identicalid) the_id else id.name[df][[1]]]]
-            )
-            names(loc.df) <- c(name, the_id)
-            DF <- dplyr::left_join(DF, loc.df, by = the_id)
-        } else{
-            loc.df <- data.frame(
-                tmp,
-                get(df)[[if(identicalid) the_id else id.name[df][[1]]]]
-            )
-            names(loc.df) <- c(name, the_id)
-            DF <- merge(x = DF, y = loc.df, by.x = the_id, all.x = TRUE)
-        }
+        loc.df <- data.frame(
+            tmp,
+            get(df)[[if(identicalid) the_id else id.name[df][[1]]]]
+        )
+        names(loc.df) <- c(name, the_id)
+        DF <- merge(x = DF, y = loc.df, by.x = the_id, all.x = TRUE)
     }
     for(nm in names(DF)){
         lab <- pdoc$label[pdoc$name == nm]
