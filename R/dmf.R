@@ -1,0 +1,147 @@
+##' @title document filtering
+##' @description stores filtering documentation in dm_filter in dm_envir
+##' @param f logical vector
+##' @param name character
+##' @param comment description of filtering
+##' @return nuffin
+##' @export
+dmf <- function(f, name, comment){
+    if(any(is.na(f))) stop("no NA:s, please")
+    n <- length(f)
+    inc <- sum(f)
+    fp <- fperc(inc/n)
+    cat("includes ", fp, " (", inc, "/", n, " rows)\n", sep = "")
+    L <- list(
+        'filter' = f,
+        'name' = name,
+        'comment' = comment,
+        'n' = n,
+        'rows' = inc,
+        'perc' = fp
+    )
+    dm_filter_set(name = name, value = L)
+    invisible(NULL)
+}
+
+## helper function
+fperc <- function(p){
+    if(p > 1 | p < 0) "impossible"
+    else if(p == 1) "100 perc."
+    else if(p > .999) ">99.9 perc."
+    else if(p < 0.001) "<.1 perc."
+    else paste0(round(100*p, 1), " perc.")
+}
+
+##' @title print 'dm_filter' object
+##' @description prints a data frame version of selected info in a 'dm_filter'
+##'     object or returns that data frame
+##' @param x a 'dm_filter' object
+##' @param ... arguments passed to print.data.frame
+##' @param print if \code{FALSE} then an data frame is returned
+##' @param seq order in which to look at the filters
+##' @return possibly a data frame
+##' @export
+print.dm_filter <- function(x, ..., print = TRUE, seq = NULL){
+    if(length(x) == 0) stop("no filtering documentation")
+    def_seq <- seq_along(x)
+    if(is.null(seq)) seq <- def_seq
+    if(any(!seq %in% def_seq)){
+        stop("bad seq, try a permutation of ", paste0(def_seq, collapse = ","))
+    }
+    if(!setequal(seq, def_seq)){
+        warning("seq doesn't cover all filters")
+    }
+    fs <- as.data.frame(lapply(x[seq], function(z) z$filter))
+    N <- nrow(fs)
+    inc <- c(N, unlist(lapply(fs, sum)))
+    exc <- N - inc
+    R <- Reduce(f = `&`, x = fs, init = rep(TRUE, nrow(fs)), accumulate = TRUE)
+    seqinc <- unlist(lapply(R, sum))
+    seqexc <- c(0, abs(diff(seqinc, differences = 1)))
+    X <- data.frame(
+        criteria = c('Population', names(x)[seq]),
+        incl = inc,
+        excl = exc,
+        seq.incl = seqinc,
+        seq.excl = seqexc,
+        row.names = NULL
+    )
+    if(print){
+        print(X, ...)
+        invisible(NULL)
+    } else X
+}
+
+##' @title filtering as latex list
+##' @description ...
+##' @param f dm_filter object or similar
+##' @return NULL and side effects
+##' @export
+dm_filter2latexlist <- function(f = NULL){
+    if(is.null(f)) f <- dm_filter()
+    if(length(f) == 0) stop("no filtering documentation")
+    ns <- unlist(lapply(f, function(x) x$n))
+    if(!all(ns == ns[1])) stop("n differ")
+    bar <- function(x){
+        paste0("\\texttt{", gsub("_", "\\_", x$name, fixed = TRUE),
+               "} '", x$comment, "'",
+               " includes ", x$perc, " (", x$rows, " rows)")
+    }
+    l <- unlist(lapply(f, bar))
+    texList <- paste0("\\begin{itemize}\n",
+                      paste0("  \\item ", l),
+                      "\\end{itemize}\n")
+    fs <- as.data.frame(lapply(f, function(x) x$filter))
+    N <- sum(rowSums(fs) == length(f))
+    conc <- paste0("\\noindent", N, " of ", ns[1], " are included.\n")
+    cat(texList, conc)
+    invisible(NULL)
+}
+
+##' @title filter distances
+##' @description some kind of metric on the filters
+##' @details this needs thinking about, but the idea was that sequantially
+##'     looking at inclusion/exclusion of filters can be very misleading
+##' @param f a dm_filter
+##' @param plot logical; plot cluster dendogram?
+##' @param m 1 or 2; method (needs documentation)
+##' @export
+dm_filter2dist <- function(f = NULL, plot = TRUE, m = 1){
+    if(is.null(f)) f <- dm_filter()
+    if(length(f) == 0) stop("no filtering documentation")
+    x <- as.data.frame(lapply(f, function(x) x$filter))
+    if(any(is.na(x))) stop("no NA in filter, please")
+    n <- ncol(x)
+    inc <- rowSums(x) == n
+    d <- function(i, j, M = m){
+        indx <- switch(M,
+                       "1" = indx <- !inc,
+                       "2" = indx <- !(x[[i]] == 1 & x[[j]] == 1))
+        sum(x[indx, i] != x[indx, j]) / sum(indx)
+    }
+    M <- matrix(NA, nrow = n, ncol = n)
+    for(i in 2:n){
+        for(j in 1:(i-1)){
+            M[i, j] <- d(i, j)
+        }
+    }
+    D <- structure(
+        M[!is.na(M)],
+        class = 'dist',
+        Size = as.integer(n),
+        Labels = names(x),
+        Diag = FALSE,
+        Upper = FALSE,
+        method = 'complete',
+        call = ''
+    )
+    if(plot & n > 2){
+        yl <- if(m == 1) "among excluded"
+              else  "among excluded (by pairwise criteria)"
+        plot(stats::hclust(D),
+             ylab = paste("Difference", yl),
+             xlab = "Criteria", sub = "",
+             main = "Cluster dendogram for difference in critera")
+    } else if(plot & n <= 2) message("no plot (need > 2 variables)")
+    D
+}

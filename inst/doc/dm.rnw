@@ -32,29 +32,30 @@ if(FALSE){ ## create document
 \section{\texttt{dm} and related functions}
 
 \subsection{The problem we want to solve}
-A statistical report sometimes build an \emph{analytical data base} (ADB) from
+A statistical report sometimes build an \emph{clinical data base} (CDB) from
 multiple sources, variables that might need to be renamed and (if categorical)
 recoded (and possibly transformed), the documentation of which is
 \emph{significantly boring}.
 
-The \texttt{dm} functions is an interactive-ish way of creating an ADB which
+The \texttt{dm} functions is an interactive-ish way of creating an CDB which
 both inspects the chosen variables and ``documents'' the process.
 
 \subsection{The elevator pitch description}
+\ldots assuming \LaTeX
 \begin{enumerate}
 \item point to variables (from possibly different sources), one at the time,
   with \verb|dm| (along with possible renaming, recoding and
-  transformation). This gives a summary of the variable pointed to
-  \footnote{Typically one wants to to this procedure anyway to sanity check all
-    variables that are to be included.}, and the information is stored in a list
-  somewhere.
-  \item create the ADB by \verb|dm_create|.
+  transformation). (Use \verb|dm_find| to look for candidate variables.) This
+  gives a summary of the variable pointed to \footnote{Typically one wants to to
+    this procedure anyway to sanity check all variables that are to be
+    included.}, and the information is stored in a list somewhere.
+  \item create the CDB by \verb|dm_create|.
   \item \label{da_point} get easy-to-print documentation of where variables came
     from (\verb|dm_doc2latex|) and what recodings have been done
     (\verb|dm_recode2latex|).
 \end{enumerate}
 So, the point really is to get (\ref{da_point}) ``for free'' in a way that is
-connected to the creation of the ADB.
+connected to the creation of the CDB.
 
 \subsection{The stuck-in-an-elevator description}
 If most variables are picked form the same source, this can be set in options.
@@ -109,16 +110,16 @@ print(myDoc)  ## N.B not all information is printed
 @
 
 Once all variables are created you can either store the "documentation" (and
-point to it later) or go on to create the ADB with \verb|dm_create|. Specify a
+point to it later) or go on to create the CDB with \verb|dm_create|. Specify a
 set if individuals (vector of id's) and, if necessary a vector of how
 individuals are indentified in different data frames. If the \texttt{doc}
 argument is not provided it will just look in \verb|dm_doc()|.
 <<"no-eval-create", echo = TRUE, eval = FALSE>>=
 id_key = c('MyDataBase' = 'id', 'Other1' = 'ID', 'Other2' = 'idno')
-ADB <- dm_create(set = MyDataBase$id, id.name = id_key)
+CDB <- dm_create(set = MyDataBase$id, id.name = id_key)
 @
 
-Now you have an ADB and you can print \verb|dm_doc()| to show where all
+Now you have an CDB and you can print \verb|dm_doc()| to show where all
 variables come from. You can get all recodings from
 <<"no-eval-tables", echo = TRUE, eval = FALSE>>=
 lapply(dm_doc(), FUN = function(x) x$recode_table)
@@ -199,12 +200,12 @@ dm('bar', 'time', db = 'COMP', transf = log)
 dm('koon', 'Gender',
    recode = list('Male' = 'M', 'Female' = 'K'))
 @
-When we are done, we create the ADB with
+When we are done, we create the CDB with
 
 <<"create">>=
-ADB <- dm_create(set = BL$id,
+CDB <- dm_create(set = BL$id,
                  id.name = c('BL' = 'id', 'COMP' = 'ID'))
-db_info(ADB)
+db_info(CDB) ## look at what we've created
 @
 
 We can view, or get the information
@@ -213,21 +214,73 @@ We can view, or get the information
 dm_doc() ## only prints partial information in the doc
 @
 
+You can store the information from the 'print' of the \verb|dm_doc()| and
+the recodings with, respectively,
+<<"variable-overview", eval = FALSE>>=
+pdoc <- print(dm_doc(), print = FALSE)
+rtables <- lapply(dm_doc(), FUN = function(x) x$recode_table)
+@
+and manipulate to output format of your choice.
+
 If we are using \LaTeX, we can get the code for this with
 <<"dm_doc2latex", results = 'asis'>>=
+## dm_doc2latex(doc = myDoc)
 dm_doc2latex(caption = "Variables and their origin.")
 @
 and all recode-information with
-
 <<"recoded", results = 'asis'>>=
+## dm_recode2latex(doc = myDoc)
 dm_recode2latex()
 @
 
-Else, you can get the information from the 'print' of the \verb|dm_doc()| and
-the recodings with, respectively,
-<<"variable-overview",eval = FALSE>>=
-d <- print(dm_doc(), print = FALSE)
-lapply(dm_doc(), FUN = function(x) x$recode_table)
+
+\clearpage
+\section{\texttt{dmf} and related functions}
+
+\subsection{The problem we want to solve}
+A clinical data base is sometimes filtered to get an \emph{analytical data
+  base}, the documentation of which is, again, somewhat tedious. As with
+\verb|dm|, we essentially want to do make the documentation parallell with
+coding so it is easy to update if the coding is updated.
+
+\subsection{Toy example continuation}
+Now, \verb|dmf| plays the role of \verb|dm|.
+
+<<"dmf">>=
+dmf(f = CDB$gr != 'Unknown', name = 'crit_knowngr',
+    comment = "group must be known")
+dmf(f = CDB$Age >= 20 & CDB$Age <= 80, name = "crit_age",
+    comment = "ages between 20 and 80")
+dmf(f = CDB$When >= as.Date("2002-01-01") &
+        CDB$When <= as.Date("2009-12-31"),
+    name = "crit_date",
+    comment = "study period 2002-2009")
+@
+
+Ok, lets look at the documentation. As with \verb|print.dm_doc| the print
+method obscures the real structure of the object somewhat.
+<<"dmf_doc">>=
+dm_filter()
+@
+
+We see how many rows each criteria includes/excludes and the inclusion/exclusion
+of these criteria when applied sequentially. We can change the order of the
+sequence, by
+<<"dmf_doc2">>=
+print(dm_filter(), seq = c(2,3,1))
+@
+
+
+\subsubsection{Experimental functions}
+
+Filter description via a list
+<<"dmf-list", results = 'asis'>>=
+dm_filter2latexlist()
+@
+
+Filter cluster description
+<<"dmf-clust", fig.cap = "Test of cluster description">>=
+dm_filter2dist(plot = TRUE)
 @
 
 
@@ -240,14 +293,14 @@ lapply(dm_doc(), FUN = function(x) x$recode_table)
 Suppose you have a set of units in a data set, and another data set where each
 unit may occur none or serveral times, each row associated with a date and one
 or more variables that contains some kind of information you want to search. For
-each unit we want to find matches in this information within some specified time
-range.
+each unit we want to find matches in this information, possibly within some
+specified time range.
 
 The function was specifically written to deal with this situation: the units are
 selected to be part of some study cohort, possible with different start and end
 times. Another data set exists which contains the medical records of (some
 possibly larger) population. At least two tasks are commonly associated with
-creating an analytical data base:
+creating an clinical data base:
 \begin{itemize}
 \item Find the medical history of each individual, i.e.\ look for codes
   pertaining to different diagnosis that appear before the individual is entered
@@ -310,8 +363,8 @@ In this case, we search as far back as we can, which will happen if we set
 'begin' to \verb|NULL|. We'll search all the way until the beginning of the
 study (which is coded in \verb|enter| in the data frame).
 
-There are options for the output format, but typicall we want a stacked long
-format (which will be default).
+There are options for the output format, but typicall we want a \emph{stacked}
+and \emph{long} format (which will be default).
 
 <<'find-mh'>>=
 
@@ -355,7 +408,7 @@ Output (names are fixed):
 
 A few of these are tabulated below.
 
-<<'show-mh', results = 'asis'>>=
+<<'show-mh'>>=
 tm[, c('id', 'event', 'alias', 'match', 'match.in', 'first.id')]
 @
 \vspace{0.5cm}
@@ -365,8 +418,10 @@ search term is found. Also, we might want to transform this to a wide format.
 
 <<'mh-fix'>>=
 tmp <- subset(tm, first.id == 1, select = c('id', 'event', 'alias'))
-(medhist <- reshape(tmp, idvar = 'id', timevar = c('alias'), direction = 'wide'))
-names(medhist) <- gsub("event", "prior", names(medhist), fixed = TRUE)
+(medhist <- reshape(tmp, idvar = 'id',
+                    timevar = c('alias'), direction = 'wide'))
+names(medhist) <- gsub("event", "prior", names(medhist),
+                       fixed = TRUE)
 @
 
 Now, we have a data frame containing the relevant medical history
@@ -385,11 +440,11 @@ create this delayed start as a variable. Search dates are inclusive.
 
 POP$endofstudy <- POP$enter + 365
 tm2 <- grepict(pattern = searchString, x = c('what1', 'what2'),
-                  data = RECORDS, id = 'identity', date = 'what.date',
-                  units = POP, units.id = 'id',
-                  begin = 'enter', ## earliest date to search from
-                  end = 'endofstudy', ## name of lates date to search,
-                  verbose = FALSE)
+               data = RECORDS, id = 'identity',
+               date = 'what.date', units = POP, units.id = 'id',
+               begin = 'enter', ## earliest date to search from
+               end = 'endofstudy', ## name of latest date
+               verbose = FALSE)
 
 @
 
@@ -401,11 +456,13 @@ tm2[, c('id', 'event', 'time', 'alias', 'match', 'match.in')]
 @
 \vspace{0.5cm}
 
-We'll assume that we only case about the first instance of each outcome.
+We'll assume that we only care about the first instance of each outcome.
 
 <<'outcomes-fix'>>=
-tmp2 <- subset(tm2, first.id == 1, select = c('id', 'event', 'time', 'alias'))
-(outcomes <- reshape(tmp2, idvar = 'id', timevar = c('alias'), direction = 'wide'))
+tmp2 <- subset(tm2, first.id == 1,
+               select = c('id', 'event', 'time', 'alias'))
+(outcomes <- reshape(tmp2, idvar = 'id', timevar = c('alias'),
+                     direction = 'wide'))
 names(outcomes) <- gsub("event", "ev", names(outcomes), fixed = TRUE)
 names(outcomes) <- gsub("time", "t", names(outcomes), fixed = TRUE)
 @
@@ -462,12 +519,12 @@ Below you can see the structure
 
 <<'other2'>>=
 tm4 <- grepict(pattern = searchString, x = c('what1', 'what2'),
-                  data = RECORDS, id = 'identity', date = 'what.date',
-                  units = POP, units.id = 'id', begin = 'enter',
-                  end = 'endofstudy',
-                  long = FALSE, ## wide output format
-                  stack = FALSE, ## don't stack
-                  verbose = FALSE
+               data = RECORDS, id = 'identity', date = 'what.date',
+               units = POP, units.id = 'id', begin = 'enter',
+               end = 'endofstudy',
+               long = FALSE, ## wide output format
+               stack = FALSE, ## don't stack
+               verbose = FALSE
 )
 str(tm4)
 @
@@ -502,9 +559,10 @@ known hospital discharge at 2001-01-21, we will interpret it as 2001-01-26.
 
 Examples:
 <<"cdate">>=
-cdate(x = c("20010101", "20010100", "20010000"))
+cdate(x = c("2001/01/01", "2001/01/00", "2001/00/00"), sep = "/")
 cdate(x = c("20010101", "20010100", "20010000"),
-      low.bound = as.Date(c("1999-01-01", "2001-01-21", "2001-06-20")))
+      low.bound = as.Date(c("1999-01-01", "2001-01-21",
+                            "2001-06-20")))
 @
 
 

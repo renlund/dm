@@ -33,7 +33,7 @@ if(FALSE){ ## create document
 
 ## ----"no-eval-create", echo = TRUE, eval = FALSE-------------------------
 #  id_key = c('MyDataBase' = 'id', 'Other1' = 'ID', 'Other2' = 'idno')
-#  ADB <- dm_create(set = MyDataBase$id, id.name = id_key)
+#  CDB <- dm_create(set = MyDataBase$id, id.name = id_key)
 
 ## ----"no-eval-tables", echo = TRUE, eval = FALSE-------------------------
 #  lapply(dm_doc(), FUN = function(x) x$recode_table)
@@ -96,23 +96,47 @@ dm('koon', 'Gender',
    recode = list('Male' = 'M', 'Female' = 'K'))
 
 ## ----"create"------------------------------------------------------------
-ADB <- dm_create(set = BL$id,
+CDB <- dm_create(set = BL$id,
                  id.name = c('BL' = 'id', 'COMP' = 'ID'))
-db_info(ADB)
+db_info(CDB) ## look at what we've created
 
 ## ----"get-doc"-----------------------------------------------------------
 ## myDoc <- dm_doc()
 dm_doc() ## only prints partial information in the doc
 
+## ----"variable-overview", eval = FALSE-----------------------------------
+#  pdoc <- print(dm_doc(), print = FALSE)
+#  rtables <- lapply(dm_doc(), FUN = function(x) x$recode_table)
+
 ## ----"dm_doc2latex", results = 'asis'------------------------------------
+## dm_doc2latex(doc = myDoc)
 dm_doc2latex(caption = "Variables and their origin.")
 
 ## ----"recoded", results = 'asis'-----------------------------------------
+## dm_recode2latex(doc = myDoc)
 dm_recode2latex()
 
-## ----"variable-overview",eval = FALSE------------------------------------
-#  d <- print(dm_doc(), print = FALSE)
-#  lapply(dm_doc(), FUN = function(x) x$recode_table)
+## ----"dmf"---------------------------------------------------------------
+dmf(f = CDB$gr != 'Unknown', name = 'crit_knowngr',
+    comment = "group must be known")
+dmf(f = CDB$Age >= 20 & CDB$Age <= 80, name = "crit_age",
+    comment = "ages between 20 and 80")
+dmf(f = CDB$When >= as.Date("2002-01-01") &
+        CDB$When <= as.Date("2009-12-31"),
+    name = "crit_date",
+    comment = "study period 2002-2009")
+
+## ----"dmf_doc"-----------------------------------------------------------
+dm_filter()
+
+## ----"dmf_doc2"----------------------------------------------------------
+print(dm_filter(), seq = c(2,3,1))
+
+## ----"dmf-list", results = 'asis'----------------------------------------
+dm_filter2latexlist()
+
+## ----"dmf-clust", fig.cap = "Test of cluster description"----------------
+dm_filter2dist(plot = TRUE)
 
 ## ----'generate-data'-----------------------------------------------------
 POP <- data.frame(
@@ -161,13 +185,15 @@ tm <- grepict(
 )
 
 
-## ----'show-mh', results = 'asis'-----------------------------------------
+## ----'show-mh'-----------------------------------------------------------
 tm[, c('id', 'event', 'alias', 'match', 'match.in', 'first.id')]
 
 ## ----'mh-fix'------------------------------------------------------------
 tmp <- subset(tm, first.id == 1, select = c('id', 'event', 'alias'))
-(medhist <- reshape(tmp, idvar = 'id', timevar = c('alias'), direction = 'wide'))
-names(medhist) <- gsub("event", "prior", names(medhist), fixed = TRUE)
+(medhist <- reshape(tmp, idvar = 'id',
+                    timevar = c('alias'), direction = 'wide'))
+names(medhist) <- gsub("event", "prior", names(medhist),
+                       fixed = TRUE)
 
 ## ----'show-mh-fixed'-----------------------------------------------------
 medhist
@@ -176,19 +202,21 @@ medhist
 
 POP$endofstudy <- POP$enter + 365
 tm2 <- grepict(pattern = searchString, x = c('what1', 'what2'),
-                  data = RECORDS, id = 'identity', date = 'what.date',
-                  units = POP, units.id = 'id',
-                  begin = 'enter', ## earliest date to search from
-                  end = 'endofstudy', ## name of lates date to search,
-                  verbose = FALSE)
+               data = RECORDS, id = 'identity',
+               date = 'what.date', units = POP, units.id = 'id',
+               begin = 'enter', ## earliest date to search from
+               end = 'endofstudy', ## name of latest date
+               verbose = FALSE)
 
 
 ## ----'show-outcomes'-----------------------------------------------------
 tm2[, c('id', 'event', 'time', 'alias', 'match', 'match.in')]
 
 ## ----'outcomes-fix'------------------------------------------------------
-tmp2 <- subset(tm2, first.id == 1, select = c('id', 'event', 'time', 'alias'))
-(outcomes <- reshape(tmp2, idvar = 'id', timevar = c('alias'), direction = 'wide'))
+tmp2 <- subset(tm2, first.id == 1,
+               select = c('id', 'event', 'time', 'alias'))
+(outcomes <- reshape(tmp2, idvar = 'id', timevar = c('alias'),
+                     direction = 'wide'))
 names(outcomes) <- gsub("event", "ev", names(outcomes), fixed = TRUE)
 names(outcomes) <- gsub("time", "t", names(outcomes), fixed = TRUE)
 
@@ -212,12 +240,12 @@ tm3[, val]
 
 ## ----'other2'------------------------------------------------------------
 tm4 <- grepict(pattern = searchString, x = c('what1', 'what2'),
-                  data = RECORDS, id = 'identity', date = 'what.date',
-                  units = POP, units.id = 'id', begin = 'enter',
-                  end = 'endofstudy',
-                  long = FALSE, ## wide output format
-                  stack = FALSE, ## don't stack
-                  verbose = FALSE
+               data = RECORDS, id = 'identity', date = 'what.date',
+               units = POP, units.id = 'id', begin = 'enter',
+               end = 'endofstudy',
+               long = FALSE, ## wide output format
+               stack = FALSE, ## don't stack
+               verbose = FALSE
 )
 str(tm4)
 
@@ -226,7 +254,8 @@ val <- c('id', names(tm4)[grepl("event|time", names(tm4))])
 tm4[, val[!grepl("Foo", val)]]
 
 ## ----"cdate"-------------------------------------------------------------
-cdate(x = c("20010101", "20010100", "20010000"))
+cdate(x = c("2001/01/01", "2001/01/00", "2001/00/00"), sep = "/")
 cdate(x = c("20010101", "20010100", "20010000"),
-      low.bound = as.Date(c("1999-01-01", "2001-01-21", "2001-06-20")))
+      low.bound = as.Date(c("1999-01-01", "2001-01-21",
+                            "2001-06-20")))
 

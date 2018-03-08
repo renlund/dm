@@ -9,7 +9,7 @@
 dm_create <- function(set, id.name, doc = NULL){
     if(is.null(doc)) doc <- dm_doc()
     if(length(doc) == 0) stop("[dm_create] doc empty")
-    pdoc <- print.dm(doc, print = FALSE)
+    pdoc <- print.dm_doc(doc, print = FALSE)
     all_db <- unique(unlist(lapply(doc, function(x) x$db)))
     missing_db <- all_db[!all_db %in% ls(envir = .GlobalEnv, all.names = TRUE)]
     if(length(missing_db) > 0) {

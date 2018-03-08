@@ -1,7 +1,8 @@
 ## These function creates and handles overall dm options
 ## The options are stored in an environment 'dm_envir'
 
-.dm_doc_empty <- structure(list(), class = c("dm", "list"))
+.dm_doc_empty <- structure(list(), class = c("dm_doc", "list"))
+.dm_filter_empty <- structure(list(), class = c("dm_filter", "list"))
 
 ## @title dm_envir
 ## @description an environment
@@ -12,7 +13,8 @@ dm_envir <- new.env(parent = getNamespace("dm"))
 dm_restore <- function(){
     assign(x = "defaults",
            value = list("default_db" = NULL,
-                        "documentation" = "dm_doc"),
+                        "documentation" = "dm_doc",
+                        "filter" = "dm_filter"),
            envir=dm_envir)
     assign(x = "values",
            value = names(get(x="defaults", envir=dm_envir)),
@@ -79,6 +81,12 @@ assign(x = dm_get('documentation'),
        value = .dm_doc_empty,
        envir = dm_envir)
 
+## @title variable dm_filter
+## @description a list keeping the documentation of the filtering
+assign(x = dm_get('filter'),
+       value = .dm_filter_empty,
+       envir = dm_envir)
+
 ##' get or reset documentation for dm
 ##'
 ##' get or reset the list that has documentet the data management process done by dm
@@ -117,8 +125,51 @@ dm_doc <- function(kill = FALSE, prompt = TRUE){
 dm_doc_set <- function(name, value){
     L <- dm_doc()
     L[[name]] <- value
-    ## class(L) <- c("dm", "list") ## should not be necessary
     assign(x = dm_get('documentation'),
+           value = L,
+           envir = dm_envir)
+    invisible(NULL)
+}
+
+##' get or reset documentation for filtering
+##'
+##' get or reset the list that has documentet a filtering process done by dmf
+##' @param kill if \code{TRUE} deletes all documentation
+##' @param prompt if \code{TRUE} prompts before deleting
+##' @export
+dm_filter <- function(kill = FALSE, prompt = TRUE){
+    if(kill){
+        reset <- TRUE
+        if(prompt){
+            p <- paste0("WARNING: do you want to delete all dm documentation?\n",
+                        "         ('y' for yes, anything else for no)\n\n",
+                        "                                                     ")
+            reset <- readline(prompt = p) == "y"
+        }
+        if(reset){
+            assign(x = dm_get('filter'),
+                   value = .dm_filter_empty,
+                   envir = dm_envir)
+            cat(" ~ dm_filter has been nullified!\n")
+        } else {
+            cat(" ~ dm_filter is intact\n")
+        }
+        invisible(NULL)
+    } else {
+        get(x = dm_get('filter'),
+            envir = dm_envir)
+    }
+}
+
+##' add to filter documentation
+##'
+##' add list element to filter documentation (internal use)
+##' @param name name of new list element
+##' @param value value of new list element
+dm_filter_set <- function(name, value){
+    L <- dm_filter()
+    L[[name]] <- value
+    assign(x = dm_get('filter'),
            value = L,
            envir = dm_envir)
     invisible(NULL)

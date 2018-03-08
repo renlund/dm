@@ -1,9 +1,9 @@
 #' @title Data Management Tool (interactive-ish)
 #' @description This creates a list of data management information (defaults to
-#'     a 'dm' object called 'documentation' in the environment 'dm_envir' which
-#'     can be retrieved with \code{dm_doc()}). This information can then be used
-#'     to extract and recode (factors and dates) for (or towards) an analytical
-#'     data base.
+#'     a 'dm_doc' object called 'documentation' in the environment 'dm_envir'
+#'     which can be retrieved with \code{dm_doc()}). This information can then
+#'     be used to extract and recode (factors and dates) for (or towards) an
+#'     analytical data base.
 #' @param var character, database/data frame entry
 #' @param name character, (new) name of variable, will be 'var' if unspecified
 #' @param db character, name of data frame, if \code{NULL}, will look for
@@ -147,16 +147,16 @@ dm <- function(var, name = var, db = NULL, recode = NULL, transf = NULL,
     invisible(NULL)
 }
 
-##' print 'dm' object
+##' print 'dm_doc' object
 ##'
-##' prints a data frame version of selected info in a 'dm' object or returns
+##' prints a data frame version of selected info in a 'dm_doc' object or returns
 ##'     that data frame
-##' @param x a 'dm' object
+##' @param x a 'dm_doc' object
 ##' @param ... arguments passed to print.data.frame
 ##' @param print if \code{FALSE} then an data frame is returned
 ##' @return possibly a data frame
 ##' @export
-print.dm <- function(x, ..., print = TRUE){
+print.dm_doc <- function(x, ..., print = TRUE){
     X <- Reduce(rbind,
                 lapply(dm_doc(), function(x){
                     y <- x[c('name', 'var', 'db', 'transf', 'label', 'comment')]

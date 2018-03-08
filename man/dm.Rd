@@ -29,8 +29,8 @@ be kept?  (only if \code{label} is \code{NULL})}
 }
 \description{
 This creates a list of data management information (defaults to
-    a 'dm' object called 'documentation' in the environment 'dm_envir' which
-    can be retrieved with \code{dm_doc()}). This information can then be used
-    to extract and recode (factors and dates) for (or towards) an analytical
-    data base.
+    a 'dm_doc' object called 'documentation' in the environment 'dm_envir'
+    which can be retrieved with \code{dm_doc()}). This information can then
+    be used to extract and recode (factors and dates) for (or towards) an
+    analytical data base.
 }
