@@ -4,7 +4,8 @@
 \alias{cdate}
 \title{fix censored dates}
 \usage{
-cdate(x, sep = NULL, low.bound = NULL, ok.years = NULL)
+cdate(x, sep = NULL, low.bound = NULL, ok.years = NULL,
+  ignore.na = TRUE)
 }
 \arguments{
 \item{x}{dates}
@@ -15,6 +16,8 @@ cdate(x, sep = NULL, low.bound = NULL, ok.years = NULL)
 
 \item{ok.years}{span of years that are ok, values outside will generate an
 error, \code{NULL} (default) all years are accepted}
+
+\item{ignore.na}{logical; ignore missing values?}
 }
 \description{
 fix censored dates of the type '20110000' or '20110200' by

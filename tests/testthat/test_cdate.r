@@ -37,7 +37,15 @@ test_that("'fix.single.cdate' works", {
     )
     expect_equal(
         fix.single.cdate(x = "20120500", low.bound = as.Date("2010-05-31")),
-        as.Date("2012-05-31")
+        as.Date("2012-05-16")
+    )
+    expect_equal(
+        fix.single.cdate(x = "20120500", low.bound = as.Date("2010-05-12")),
+        fix.single.cdate(x = "20120500")
+    )
+    expect_equal(
+        fix.single.cdate(x = "20120500", low.bound = as.Date("2012-04-12")),
+        fix.single.cdate(x = "20120500")
     )
     expect_error(fix.single.cdate(x = "19890000", ok.year = 1990:2010))
 })
