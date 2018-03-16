@@ -250,7 +250,7 @@ grepict <- function(pattern, x = NULL, data, id = 'id', date = 'date',
     .required_properties(verbose, class = "logical", length = 1, nm = "verbose")
     if(verbose) cat("\n [Function dm::grepict set to verbose.]\n",
                     "Checking arguments and preparing data before calling",
-                    "grepict...\n")
+                    "grepict_rigid\n")
     .required_data_names(data.names = names(data),
                          required = c(id, date, x))
     data.begin <- if(class(begin) == "Date"){

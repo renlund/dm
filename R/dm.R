@@ -100,7 +100,7 @@ dm <- function(var, name = var, db = NULL, recode = NULL, transf = NULL,
             b <- paste0(utils::tail(y, n = 10), collapse = ", ")
             cat(paste0("\nThe first and last (at most 10 each) non-NA, ",
                        " non-empty, and non-space values are:\n   ",
-                       a, "\n      and\n   ", b, ",\n  respectively."))
+                       a, "\n      and\n   ", b, ",\n  respectively.\n"))
         }
     }
     ## print info if numerical------------------------------------------------
