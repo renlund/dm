@@ -9,7 +9,7 @@ grepict2surv <- function(g, prefix = c('time' = 't.', 'event' = 'ev.')){
                          length = 2, nm = 'prefix')
     .required_data_names(data.names = names(g),
                          required = c('id', 'time', 'event', 'first.id'))
-    G <- subset(g, first.id == 1)
+    G <- subset(g, g$first.id == 1)
     AL <- unique(G$alias)
     R <- NULL
     if(length(AL) != 0){
