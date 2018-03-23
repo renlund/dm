@@ -23,6 +23,21 @@ dmf <- function(f, name, comment){
     invisible(NULL)
 }
 
+##' @title create filter
+##' @description use dmf-created list to make overall filter
+##' @param x an object from \code{dmf}
+##' @return logical vector
+##' @export
+dmf_create <- function(x = NULL){
+    if(is.null(x)) x <- dm_filter()
+    if(length(x) == 0){
+        message("no filtering documentation")
+        return(invisible(NULL))
+    }
+    fs <- as.data.frame(lapply(x, function(z) z$filter))
+    Reduce(f = `&`, x = fs, init = rep(TRUE, nrow(fs)), accumulate = FALSE)
+}
+
 ## helper function
 fperc <- function(p){
     if(p > 1 | p < 0) "impossible"
@@ -42,7 +57,10 @@ fperc <- function(p){
 ##' @return possibly a data frame
 ##' @export
 print.dm_filter <- function(x, ..., print = TRUE, seq = NULL){
-    if(length(x) == 0) stop("no filtering documentation")
+    if(length(x) == 0){
+        message("no filtering documentation")
+        return(invisible(NULL))
+    }
     def_seq <- seq_along(x)
     if(is.null(seq)) seq <- def_seq
     if(any(!seq %in% def_seq)){
@@ -79,7 +97,10 @@ print.dm_filter <- function(x, ..., print = TRUE, seq = NULL){
 ##' @export
 dm_filter2latexlist <- function(f = NULL){
     if(is.null(f)) f <- dm_filter()
-    if(length(f) == 0) stop("no filtering documentation")
+    if(length(f) == 0){
+        message("no filtering documentation")
+        return(invisible(NULL))
+    }
     ns <- unlist(lapply(f, function(x) x$n))
     if(!all(ns == ns[1])) stop("n differ")
     bar <- function(x){
