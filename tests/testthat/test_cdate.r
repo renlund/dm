@@ -47,14 +47,25 @@ test_that("'fix.single.cdate' works", {
         fix.single.cdate(x = "20120500", low.bound = as.Date("2012-04-12")),
         fix.single.cdate(x = "20120500")
     )
-    expect_error(fix.single.cdate(x = "19890000", ok.year = 1990:2010))
+    expect_equal(
+        fix.single.cdate(x = "19890000"),
+        fix.single.cdate(x = "19890000", low.bound = as.Date("1989-01-01"))
+    )
 })
 
 test_that("'cdate' works", {
     x <- c("20090000" , "20100800", "20120506")
     y <- as.Date(c("2009-07-02" , "2010-08-16", "2012-05-06"))
-    expect_equal(cdate(x),y)
+    ## cdate(x)
+    ## cdate(x[3])
+    expect_equal(cdate(x, verbose = FALSE),y)
     L <- as.Date(c("2009-07-01" , "2010-08-10", "2012-05-06"))
     y <- as.Date(c("2009-10-01" , "2010-08-20", "2012-05-06"))
-    expect_equal(cdate(x, low.bound = L), y)
+    ## cdate(x, low.bound = L)
+    expect_equal(cdate(x, low.bound = L, verbose = FALSE), y)
+    L <- as.Date(c("2010-07-01" , "2010-08-10", "2012-05-06"))
+    expect_error(cdate(x, low.bound = L, verbose = FALSE))
+    L <- as.Date(c("2009-07-01" , "2010-08-10", "2012-05-07"))
+    expect_equal(cdate(x, low.bound = L, verbose = FALSE), y)
+    expect_error(cdate(x, low.bound = L, bound4all = TRUE, verbose = FALSE))
 })

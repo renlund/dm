@@ -4,20 +4,22 @@
 \alias{cdate}
 \title{fix censored dates}
 \usage{
-cdate(x, sep = NULL, low.bound = NULL, ok.years = NULL,
-  ignore.na = TRUE)
+cdate(x, sep = NULL, low.bound = NULL, verbose = TRUE,
+  bound4all = FALSE, ignore.na = TRUE)
 }
 \arguments{
-\item{x}{dates}
+\item{x}{dates, possibly censored, as character or numeric (e.g. 20070101)}
 
-\item{sep}{seprator in x, if any}
+\item{sep}{separator in x, if any}
 
 \item{low.bound}{the lower bound}
 
-\item{ok.years}{span of years that are ok, values outside will generate an
-error, \code{NULL} (default) all years are accepted}
+\item{verbose}{logical; print additional info, maybe}
 
-\item{ignore.na}{logical; ignore missing values?}
+\item{bound4all}{logical (default \code{FALSE}); apply bound also to
+uncensored dates?}
+
+\item{ignore.na}{logical; ignore missing values in x?}
 }
 \description{
 fix censored dates of the type '20110000' or '20110200' by
