@@ -1,4 +1,4 @@
-#' @title This function manipulates factor levels
+#' @title manipulate factor levels
 #' @description This functions enables relabeling, reordering and merging of factor levels.
 #' @param x factor or character vector to be relabelled or reordered
 #' @param L a list specifying the relabeling/reordering, list names specify a
@@ -9,6 +9,7 @@
 #'     this name is to be unchanged but be placed in that place (order-wise).
 #' @param asFactor if \code{TRUE} then a factor is returned (default \code{TRUE})
 #' @param newFirst if \code{TRUE} then added levels will be placed first in the list of levels (default \code{TRUE})
+#' @param ... dcode arguments passed to recode
 #' @examples
 #' x <- LETTERS[2:1]
 #' factor(x) ## levels in alphabetical order
@@ -52,6 +53,11 @@ recode <- function(x, L, asFactor = TRUE, newFirst = TRUE){
        copy_x
    }
 }
+
+##' @describeIn recode 'dcode' is an alias for 'recode' since the latter is in
+##'     use in some proper R package
+##' @export
+dcode <- function(...) recode(...)
 
 ## below is a code chunk for checking things related to the recoding, but
 ## it seems to be superfluous
