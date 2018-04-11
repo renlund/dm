@@ -9,10 +9,10 @@
 db_info <- function(df, attrib = 'label', name = NULL){
     if(is.null(name)) name <- as.character(substitute(df))
     foo <- function(x){
-        if(is.null(r <- attr(x, attrib))) "" else r
+        if(is.null(r <- attr(x, attrib)[1])) "" else r
     }
     bar <- function(x){
-        if(is.null(r <- class(x))) "" else r
+        if(is.null(r <- class(x)[1])) "" else r
     }
     r <- data.frame(
         name,

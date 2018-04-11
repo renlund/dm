@@ -26,6 +26,7 @@ cdate <- function(x, sep = NULL, low.bound = NULL, verbose = TRUE,
     dform <- paste0("%Y", sep, "%m", sep, "%d")
     dd <- as.Date(x, format = dform)
     fail <- which(is.na(dd))
+    dummy <- 0
     if(verbose){
         if(length(fail) == 0){
             message('all x interpretable as dates')
@@ -40,6 +41,7 @@ cdate <- function(x, sep = NULL, low.bound = NULL, verbose = TRUE,
                 ), n = 100))
             }
             message("\nwe'll try to fix them\n")
+            dummy <- 1
         }
     }
     if(bound4all){
@@ -71,6 +73,7 @@ cdate <- function(x, sep = NULL, low.bound = NULL, verbose = TRUE,
         )
         dd[i] <- tmp
     }
+    if(verbose && dummy == 1) cat("fixed!")
     dd
 }
 

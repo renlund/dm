@@ -33,8 +33,8 @@ if(FALSE){ ## create document
 
 \subsection{The problem we want to solve}
 A statistical report sometimes build an \emph{clinical data base} (CDB) from
-multiple sources, variables that might need to be renamed and (if categorical)
-recoded (and possibly transformed), the documentation of which is
+multiple sources, collects variables that might need to be renamed and (if
+categorical) recoded (and possibly transformed), the documentation of which is
 \emph{significantly boring}.
 
 The \texttt{dm} functions is an interactive-ish way of creating an CDB which
@@ -46,7 +46,7 @@ both inspects the chosen variables and ``documents'' the process.
 \item point to variables (from possibly different sources), one at the time,
   with \verb|dm| (along with possible renaming, recoding and
   transformation). (Use \verb|dm_find| to look for candidate variables.) This
-  gives a summary of the variable pointed to \footnote{Typically one wants to to
+  gives a summary of the variable pointed to\footnote{Typically one wants to to
     this procedure anyway to sanity check all variables that are to be
     included.}, and the information is stored in a list somewhere.
   \item create the CDB by \verb|dm_create|.
@@ -125,7 +125,7 @@ variables come from. You can get all recodings from
 lapply(dm_doc(), FUN = function(x) x$recode_table)
 @
 
-There is also convience functions \verb|dm_recode2latex| and \verb|dm_doc2latex|
+There are also convience functions \verb|dm_recode2latex| and \verb|dm_doc2latex|
 which will print all tables and documentation, respectively, in \LaTeX\,format.
 
 \subsection{Toy Example}
@@ -467,7 +467,7 @@ names(outcomes) <- gsub("event", "ev", names(outcomes), fixed = TRUE)
 names(outcomes) <- gsub("time", "t", names(outcomes), fixed = TRUE)
 @
 
-Now, we have a data frame containing the relevant medical history
+Now, we have a data frame containing the relevant outcomes.
 
 <<'show-outcomes-fixed'>>=
 outcomes
