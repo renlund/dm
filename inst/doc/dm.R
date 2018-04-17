@@ -146,19 +146,27 @@ POP <- data.frame(
                       '2010-04-01', '2010-05-01'))
 )
 RECORDS <- data.frame(
-    identity = c('Barry', 'Christina', 'David',
-           'David', 'David', 'Esteban',
-           'Other', 'Other'),
-    what1 = c('headache', 'bar type I', 'nausea',
-             'percutaneous foo', 'quuz', '',
-             'other foo', 'other bar'),
-    what2 = c('mild foo', 'bar type II', 'severe bar',
-             'subcutaneous foo', NA, 'bar-ish',
-             'yet other foo', 'yet other bar'),
-    what.date = as.Date(c('2010-01-07', '2010-07-23', '1998-06-27',
-                          '1996-10-12', '2011-01-18', '2011-05-03',
+    identity = c('Barry', 'Barry',
+                 'Christina',
+                 'David', 'David', 'David',
+                 'Esteban', 'Esteban',
+                 'Other', 'Other'),
+    what1 = c('headache', 'foo X',
+              'bar type I',
+              'nausea', 'percutaneous foo', 'quuz',
+              '', 'enui',
+              'other foo', 'other bar'),
+    what2 = c('mild foo', NA,
+              'bar type II',
+              'severe bar', 'subcutaneous foo', NA,
+              'bar-ish', 'foo Y',
+              'yet other foo', 'yet other bar'),
+    what.date = as.Date(c('2010-01-07', '2010-02-01',
+                          '2010-07-23',
+                          '1998-06-27', '1996-10-12', '2011-01-18',
+                          '2011-05-03', '2010-05-01',
                           '1999-12-01', '2010-06-01'))
-)[sample(1:8),]
+)
 options('knitr.kable.NA' = '')
 
 ## ----'show-POP'----------------------------------------------------------
@@ -178,10 +186,11 @@ tm <- grepict(
     units = POP, ## data set, or vector, containing individuals
     units.id = 'id', ## name of id variable in 'units'
     begin = NULL, ## earliest date to search from
-    end = 'enter', ## name of lates date to search,
+    end = 'enter', ## name of lates date to search
+    include = c(TRUE, FALSE), ## include lower bound but not upper
     ## long = TRUE, ## long output format is default
     ## stack = TRUE, ## stacked results are default
-    verbose = FALSE ## give calculation progress info?
+    verbose = FALSE ## give calculation progression info?
 )
 
 
@@ -198,6 +207,25 @@ names(medhist) <- gsub("event", "prior", names(medhist),
 ## ----'show-mh-fixed'-----------------------------------------------------
 medhist
 
+## ----'find-mh-wide-unstacked'--------------------------------------------
+tmwu <- grepict(
+    pattern = searchString, ## what to search for
+    x = c('what1', 'what2'), ## search variables in 'data'
+    data = RECORDS, ## data set to search in
+    id = 'identity', ## name of id variable in 'data'
+    date = 'what.date', ## name of date variable in 'data'
+    units = POP, ## data set, or vector, containing individuals
+    units.id = 'id', ## name of id variable in 'units'
+    begin = NULL, ## earliest date to search from
+    end = 'enter', ## name of lates date to search
+    include = c(TRUE, FALSE), ## include lower bound but not upper
+    long = FALSE, ## use wide output
+    stack = FALSE, ## do not stack output
+    verbose = FALSE ## give calculation progression info?
+)
+## tmwu contains 33 variables, only some of which are of interest
+tmwu[, names(tmwu)[grepl('(id|event)', names(tmwu))]]
+
 ## ----'find-outcomes'-----------------------------------------------------
 
 POP$endofstudy <- POP$enter + 365
@@ -206,6 +234,7 @@ tm2 <- grepict(pattern = searchString, x = c('what1', 'what2'),
                date = 'what.date', units = POP, units.id = 'id',
                begin = 'enter', ## earliest date to search from
                end = 'endofstudy', ## name of latest date
+               include = c(FALSE, TRUE), ## include upper but not lower bound
                verbose = FALSE)
 
 
@@ -222,6 +251,21 @@ names(outcomes) <- gsub("time", "t", names(outcomes), fixed = TRUE)
 
 ## ----'show-outcomes-fixed'-----------------------------------------------
 outcomes
+
+## ----'find-outcomes-wide-unstacked'--------------------------------------
+
+POP$endofstudy <- POP$enter + 365
+tm2wu <- grepict(pattern = searchString, x = c('what1', 'what2'),
+               data = RECORDS, id = 'identity',
+               date = 'what.date', units = POP, units.id = 'id',
+               begin = 'enter', ## earliest date to search from
+               end = 'endofstudy', ## name of latest date
+               include = c(FALSE, TRUE), ## include upper but not lower bound
+               long = FALSE, ## use wide output
+               stack = FALSE, ## do not stack
+               verbose = FALSE)
+tm2wu[, names(tm2wu)[grepl('(id|event[^s]|time)', names(tmwu))]]
+
 
 ## ----'other'-------------------------------------------------------------
 tm3 <- grepict(pattern = searchString, x = c('what1', 'what2'),

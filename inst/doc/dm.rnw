@@ -1,5 +1,5 @@
 %\VignetteEngine{knitr::knitr}
-%\VignetteIndexEntry{How to use 'refactor' (knitr produced documentation)}
+%\VignetteIndexEntry{tools for data management documentation}
 \documentclass{article}
 
 <<'Setup', cache=FALSE, echo=FALSE, include=FALSE>>=
@@ -33,20 +33,20 @@ if(FALSE){ ## create document
 
 \subsection{The problem we want to solve}
 A statistical report sometimes build an \emph{clinical data base} (CDB) from
-multiple sources, variables that might need to be renamed and (if categorical)
-recoded (and possibly transformed), the documentation of which is
+multiple sources, collects variables that might need to be renamed and (if
+categorical) recoded (and possibly transformed), the documentation of which is
 \emph{significantly boring}.
 
 The \texttt{dm} functions is an interactive-ish way of creating an CDB which
 both inspects the chosen variables and ``documents'' the process.
 
-\subsection{The elevator pitch description}
+\subsection{The elevator pitch}
 \ldots assuming \LaTeX
 \begin{enumerate}
 \item point to variables (from possibly different sources), one at the time,
   with \verb|dm| (along with possible renaming, recoding and
   transformation). (Use \verb|dm_find| to look for candidate variables.) This
-  gives a summary of the variable pointed to \footnote{Typically one wants to to
+  gives a summary of the variable pointed to\footnote{Typically one wants to to
     this procedure anyway to sanity check all variables that are to be
     included.}, and the information is stored in a list somewhere.
   \item create the CDB by \verb|dm_create|.
@@ -57,7 +57,7 @@ both inspects the chosen variables and ``documents'' the process.
 So, the point really is to get (\ref{da_point}) ``for free'' in a way that is
 connected to the creation of the CDB.
 
-\subsection{The stuck-in-an-elevator description}
+\subsection{The stuck-in-an-elevator pitch}
 If most variables are picked form the same source, this can be set in options.
 <<"no-eval-opts", echo = TRUE, eval = FALSE>>=
 opts_dm$set('default_db' = 'MyDataBase')
@@ -125,7 +125,7 @@ variables come from. You can get all recodings from
 lapply(dm_doc(), FUN = function(x) x$recode_table)
 @
 
-There is also convience functions \verb|dm_recode2latex| and \verb|dm_doc2latex|
+There are also convience functions \verb|dm_recode2latex| and \verb|dm_doc2latex|
 which will print all tables and documentation, respectively, in \LaTeX\,format.
 
 \subsection{Toy Example}
@@ -286,7 +286,7 @@ dm_filter2dist(plot = TRUE)
 
 \newpage
 \section{\texttt{grepict}}
-(\verb|grep| by \textbf{i}ndividual, (possibly) \textbf{c}onstrained in
+(\verb|grep| by \textbf{i}ndividual, (possibly) \textbf{c}onstrained by
 \textbf{t}ime.)
 
 \subsection{The problem we want to solve}
@@ -315,15 +315,16 @@ Our cohort will consists of some individuals entering a study during the year
 2010, with no longer than one year follow-up.
 \begin{itemize}
 \item Anna enters 2010-01-01, with no medical history or outcomes,
-\item Barry enter 2010-02-01, with a previous 'foo', but no outcome,
+\item Barry enter 2010-02-01 (due to registered 'foo X' at this time), with a
+  previous 'foo', but no outcome,
 \item Christina enters 2010-03-01, with no medical history but a later 'bar',
 \item David enters 2010-04-01, with a medical history of both 'bar' and 'foo',
   as well as a later 'quuz',
-\item Esteban enters 2010-05-01, with no medical history and an outcome 'bar'
-  \emph{after} the end of follow-up.
+\item Esteban enters 2010-05-01 (due to registered 'foo Y' at this time), with
+  no medical history and an outcome 'bar' \emph{after} the end of follow-up.
 \end{itemize}
-Moreover, the medical history is to be found in two different variables.
-
+Moreover, the medical records are to be found in two different variables.
+\newpage
 <<'generate-data'>>=
 POP <- data.frame(
     id = c('Anna', 'Barry', 'Christina',
@@ -332,19 +333,27 @@ POP <- data.frame(
                       '2010-04-01', '2010-05-01'))
 )
 RECORDS <- data.frame(
-    identity = c('Barry', 'Christina', 'David',
-           'David', 'David', 'Esteban',
-           'Other', 'Other'),
-    what1 = c('headache', 'bar type I', 'nausea',
-             'percutaneous foo', 'quuz', '',
-             'other foo', 'other bar'),
-    what2 = c('mild foo', 'bar type II', 'severe bar',
-             'subcutaneous foo', NA, 'bar-ish',
-             'yet other foo', 'yet other bar'),
-    what.date = as.Date(c('2010-01-07', '2010-07-23', '1998-06-27',
-                          '1996-10-12', '2011-01-18', '2011-05-03',
+    identity = c('Barry', 'Barry',
+                 'Christina',
+                 'David', 'David', 'David',
+                 'Esteban', 'Esteban',
+                 'Other', 'Other'),
+    what1 = c('headache', 'foo X',
+              'bar type I',
+              'nausea', 'percutaneous foo', 'quuz',
+              '', 'enui',
+              'other foo', 'other bar'),
+    what2 = c('mild foo', NA,
+              'bar type II',
+              'severe bar', 'subcutaneous foo', NA,
+              'bar-ish', 'foo Y',
+              'yet other foo', 'yet other bar'),
+    what.date = as.Date(c('2010-01-07', '2010-02-01',
+                          '2010-07-23',
+                          '1998-06-27', '1996-10-12', '2011-01-18',
+                          '2011-05-03', '2010-05-01',
                           '1999-12-01', '2010-06-01'))
-)[sample(1:8),]
+)
 options('knitr.kable.NA' = '')
 @
 
@@ -361,7 +370,11 @@ point to \verb|identity|, \verb|date| and \verb|what.date|. In \verb|POP| we
 need to point to \verb|id| and specify the search interval 'begin' and 'end'.
 In this case, we search as far back as we can, which will happen if we set
 'begin' to \verb|NULL|. We'll search all the way until the beginning of the
-study (which is coded in \verb|enter| in the data frame).
+study (which is coded in \verb|enter| in the data frame). Actually, we will
+search strictly before \verb|enter| (so as to not confuse the reason for entry
+into the study with medical history), by specifying
+\verb|include = c(TRUE, FALSE)| which indicates that the lower bound is
+inclusive, but he upper bound is not.
 
 There are options for the output format, but typicall we want a \emph{stacked}
 and \emph{long} format (which will be default).
@@ -379,10 +392,11 @@ tm <- grepict(
     units = POP, ## data set, or vector, containing individuals
     units.id = 'id', ## name of id variable in 'units'
     begin = NULL, ## earliest date to search from
-    end = 'enter', ## name of lates date to search,
+    end = 'enter', ## name of lates date to search
+    include = c(TRUE, FALSE), ## include lower bound but not upper
     ## long = TRUE, ## long output format is default
     ## stack = TRUE, ## stacked results are default
-    verbose = FALSE ## give calculation progress info?
+    verbose = FALSE ## give calculation progression info?
 )
 
 @
@@ -430,11 +444,39 @@ Now, we have a data frame containing the relevant medical history
 medhist
 @
 
+\noindent\textbf{Using ustacked, wide output}\\
+Unstacked output gives essentially gives the same information as a stacked
+output, but with details for the first match and summary on all others (thus a
+one row per individual \emph{and} search term). The wide output, which can only
+be used for non-stacked results, turns the non-stacked data into a wide format
+and gives each output variable name (which is not identical for each search
+term) a suffix (the alias). For certain applications, this is a shortcut.
+
+<<'find-mh-wide-unstacked'>>=
+tmwu <- grepict(
+    pattern = searchString, ## what to search for
+    x = c('what1', 'what2'), ## search variables in 'data'
+    data = RECORDS, ## data set to search in
+    id = 'identity', ## name of id variable in 'data'
+    date = 'what.date', ## name of date variable in 'data'
+    units = POP, ## data set, or vector, containing individuals
+    units.id = 'id', ## name of id variable in 'units'
+    begin = NULL, ## earliest date to search from
+    end = 'enter', ## name of lates date to search
+    include = c(TRUE, FALSE), ## include lower bound but not upper
+    long = FALSE, ## use wide output
+    stack = FALSE, ## do not stack output
+    verbose = FALSE ## give calculation progression info?
+)
+## tmwu contains 33 variables, only some of which are of interest
+tmwu[, names(tmwu)[grepl('(id|event)', names(tmwu))]]
+@
+
 \subsubsection{Outcomes}
 Next, we'll look at outcomes. Since the end of study is
 variable, we'll have to create this variable, lets call it \verb|endofstudy|.
-Note: if we want to start the search one day after \verb|enter| we'll have to
-create this delayed start as a variable. Search dates are inclusive.
+%% Note: if we want to start the search one day after \verb|enter| we'll have to
+%% create this delayed start as a variable. Search dates are inclusive.
 
 <<'find-outcomes'>>=
 
@@ -444,6 +486,7 @@ tm2 <- grepict(pattern = searchString, x = c('what1', 'what2'),
                date = 'what.date', units = POP, units.id = 'id',
                begin = 'enter', ## earliest date to search from
                end = 'endofstudy', ## name of latest date
+               include = c(FALSE, TRUE), ## include upper but not lower bound
                verbose = FALSE)
 
 @
@@ -467,15 +510,34 @@ names(outcomes) <- gsub("event", "ev", names(outcomes), fixed = TRUE)
 names(outcomes) <- gsub("time", "t", names(outcomes), fixed = TRUE)
 @
 
-Now, we have a data frame containing the relevant medical history
+Now, we have a data frame containing the relevant outcomes.
 
 <<'show-outcomes-fixed'>>=
 outcomes
 @
 
+\noindent\textbf{Other ways to get wide output}
+As shown before, we can get wide output directly
+<<'find-outcomes-wide-unstacked'>>=
+
+POP$endofstudy <- POP$enter + 365
+tm2wu <- grepict(pattern = searchString, x = c('what1', 'what2'),
+               data = RECORDS, id = 'identity',
+               date = 'what.date', units = POP, units.id = 'id',
+               begin = 'enter', ## earliest date to search from
+               end = 'endofstudy', ## name of latest date
+               include = c(FALSE, TRUE), ## include upper but not lower bound
+               long = FALSE, ## use wide output
+               stack = FALSE, ## do not stack
+               verbose = FALSE)
+tm2wu[, names(tm2wu)[grepl('(id|event[^s]|time)', names(tmwu))]]
+
+@
+
+
 \clearpage
-\subsection{Other output}
-I'm thinking\ldots maybe not use these?
+\subsection{Some details on wide and unstacked output}
+%%I'm thinking\ldots maybe not use these?
 
 \subsubsection{Wide and stacked}
 With a wide, stacked output, we get one row per individual and search.  We get
