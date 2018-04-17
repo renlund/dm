@@ -157,6 +157,10 @@ dm <- function(var, name = var, db = NULL, recode = NULL, transf = NULL,
 ##' @return possibly a data frame
 ##' @export
 print.dm_doc <- function(x, ..., print = TRUE){
+    if(length(x) == 0){
+        message("no variable documentation")
+        return(invisible(NULL))
+    }
     X <- Reduce(rbind,
                 lapply(dm_doc(), function(x){
                     y <- x[c('name', 'var', 'db', 'transf', 'label', 'comment')]
