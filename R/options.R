@@ -3,6 +3,7 @@
 
 .dm_doc_empty <- structure(list(), class = c("dm_doc", "list"))
 .dm_filter_empty <- structure(list(), class = c("dm_filter", "list"))
+.dm_derive_empty <- structure(list(), class = c("dm_derive", "list"))
 
 ## @title dm_envir
 ## @description an environment
@@ -14,7 +15,8 @@ dm_restore <- function(){
     assign(x = "defaults",
            value = list("default_db" = NULL,
                         "documentation" = "dm_doc",
-                        "filter" = "dm_filter"),
+                        "filter" = "dm_filter",
+                        "derive" = "dm_derive"),
            envir=dm_envir)
     assign(x = "values",
            value = names(get(x="defaults", envir=dm_envir)),
@@ -87,6 +89,13 @@ assign(x = dm_get('filter'),
        value = .dm_filter_empty,
        envir = dm_envir)
 
+## @title variable dm_derive
+## @description a list keeping the documentation of the derived variables
+assign(x = dm_get('derive'),
+       value = .dm_derive_empty,
+       envir = dm_envir)
+
+
 ##' get or reset documentation for dm
 ##'
 ##' get or reset the list that has documentet the data management process done by dm
@@ -141,7 +150,7 @@ dm_filter <- function(kill = FALSE, prompt = TRUE){
     if(kill){
         reset <- TRUE
         if(prompt){
-            p <- paste0("WARNING: do you want to delete all dm documentation?\n",
+            p <- paste0("WARNING: do you want to delete all filter documentation?\n",
                         "         ('y' for yes, anything else for no)\n\n",
                         "                                                     ")
             reset <- readline(prompt = p) == "y"
@@ -170,6 +179,51 @@ dm_filter_set <- function(name, value){
     L <- dm_filter()
     L[[name]] <- value
     assign(x = dm_get('filter'),
+           value = L,
+           envir = dm_envir)
+    invisible(NULL)
+}
+
+##' get or reset documentation for derivation
+##'
+##' get or reset the list that has documented a derivation process
+##' @param kill if \code{TRUE} deletes all documentation
+##' @param prompt if \code{TRUE} prompts before deleting
+##' @export
+dm_derive <- function(kill = FALSE, prompt = TRUE){
+    if(kill){
+        reset <- TRUE
+        if(prompt){
+            p <- paste0("WARNING: do you want to delete all derive documentation?\n",
+                        "         ('y' for yes, anything else for no)\n\n",
+                        "                                                     ")
+            reset <- readline(prompt = p) == "y"
+        }
+        if(reset){
+            assign(x = dm_get('derive'),
+                   value = .dm_derive_empty,
+                   envir = dm_envir)
+            cat(" ~ dm_derive has been nullified!\n")
+        } else {
+            cat(" ~ dm_derive is intact\n")
+        }
+        invisible(NULL)
+    } else {
+        get(x = dm_get('derive'),
+            envir = dm_envir)
+    }
+}
+
+
+##' add to derive documentation
+##'
+##' add list element to derive documentation (internal use)
+##' @param name name of new list element
+##' @param value value of new list element
+dm_derive_set <- function(name, value){
+    L <- dm_derive()
+    L[[name]] <- value
+    assign(x = dm_get('derive'),
            value = L,
            envir = dm_envir)
     invisible(NULL)
