@@ -1,15 +1,18 @@
 ##' @title helper for grepict
-##' @description this is essentially a helper function for \code{grepict}, see the
-##'     documentation
+##' @description this is essentially a helper function for \code{grepict}, see
+##'     the documentation
 ##' @param pattern a search string to pass to \code{grepl}
 ##' @param x names of variables to search in (in order of importance, if
 ##'     applicable), if \code{NULL} all variables except 'id' and 'date' (which
 ##'     must exist) and 'begin' and 'end' (which might exist) are used as search
 ##'     variables
-##' @param data a data set that must contain 'id' and 'date', and
-##'     optionally 'begin' and 'end'. If the latter are missing, the earliest
-##'     and latest dates will be used, respectively.
+##' @param data a data set that must contain 'id' and 'date', and optionally
+##'     'begin' and 'end'. If the latter are missing, the earliest and latest
+##'     dates will be used, respectively.
 ##' @param ... arguments (beyond 'pattern' and 'x') passed to \code{grepl}
+##' @param include length 2 logical vector specifying if lower (first entry) and
+##'     upper (second entry) bounds are inclusive (\code{TRUE}) or not
+##'     (\code{FALSE})
 ##' @param long output format, if \code{TRUE} all hits have separate row, else
 ##'     the emphasis is on the first hit for each 'id' (by 'date' and 'x'). N.B
 ##'     \code{long = FALSE} will be slow for large datasets!
@@ -20,11 +23,12 @@
 ##'     override this behavour by setting this argument to zero
 ##' @return See \code{\link{grepict}} for details on output
 ##' @seealso \code{\link{grepict}}, \code{\link[base]{grepl}}
-grepict_rigid <- function(pattern, x = NULL, data, ...,
+grepict_rigid <- function(pattern, x = NULL, data, ..., include = c(TRUE, TRUE),
                              long = TRUE, verbose = TRUE, paste.alias = TRUE){
     ## -- sanity checks
     .required_properties(x = verbose, class = "logical", length = 1)
     if(verbose) cat("\n [Function dm::grepict_rigid is verbose]\n Checking arguments and data\n")
+    .required_properties(x = include, class = "logical", length = 2)
     .required_properties(x = long, class = "logical", length = 1)
     .required_properties(x = paste.alias, class = "logical", length = 1)
     .required_properties(x = pattern, class = "character", length = 1)
@@ -76,7 +80,21 @@ grepict_rigid <- function(pattern, x = NULL, data, ...,
         data[[K]] <- NA
     }
     ## -- filter data to relevant time period
-    data <- data[data$date >= data$begin & data$date <= data$end, ]
+    ## data <- data[data$date >= data$begin & data$date <= data$end, ]
+    ## test 20180411 start ---
+    if(  include[1] &&  include[2] ){
+        data <- data[data$date >= data$begin & data$date <= data$end, ]
+    }
+    if(  include[1] && !include[2] ){
+        data <- data[data$date >= data$begin & data$date <  data$end, ]
+    }
+    if( !include[1] &&  include[2] ){
+        data <- data[data$date >  data$begin & data$date <= data$end, ]
+    }
+    if( !include[1] && !include[2] ){
+        data <- data[data$date >  data$begin & data$date <  data$end, ]
+    }
+    ## test 20180411 end ---
     pattern.name <- names(pattern)
     alias <- if(is.null(pattern.name)) "p1" else pattern.name
     .alias <- if(is.null(pattern.name)) NULL else paste0(".", alias)
@@ -244,9 +262,9 @@ grepict_rigid <- function(pattern, x = NULL, data, ...,
 ##'
 ##' @export
 grepict <- function(pattern, x = NULL, data, id = 'id', date = 'date',
-                       units = NULL, units.id = id, begin = 'begin',
-                       end = 'end', ..., long = TRUE, stack = TRUE,
-                       verbose = TRUE){
+                    units = NULL, units.id = id, begin = 'begin',
+                    end = 'end', include = c(TRUE, TRUE), ...,
+                    long = TRUE, stack = TRUE, verbose = TRUE){
     .required_properties(verbose, class = "logical", length = 1, nm = "verbose")
     if(verbose) cat("\n [Function dm::grepict set to verbose.]\n",
                     "Checking arguments and preparing data before calling",
@@ -265,6 +283,7 @@ grepict <- function(pattern, x = NULL, data, id = 'id', date = 'date',
                   }
     if(is.null(begin)) begin <- data.begin
     if(is.null(end))   end   <- data.end
+    .required_properties(x = include, class = "logical", length = 2)
     .required_properties(pattern, class = "character")
     .required_properties(x, class = c("character", "NULL"))
     .required_properties(data, class = "data.frame")
@@ -344,8 +363,8 @@ grepict <- function(pattern, x = NULL, data, id = 'id', date = 'date',
     if(length(pattern) == 1){
         do.call(grepict_rigid,
                 args = c(list('pattern' = pattern, 'x' = x, 'data' = DATA,
-                              'long' = long, 'verbose' = verbose,
-                              'paste.alias' = TRUE),
+                              'include' = include, 'long' = long,
+                              'verbose' = verbose, 'paste.alias' = TRUE),
                          .dots))
     } else {
         pattern.names <- names(pattern)
@@ -366,8 +385,8 @@ grepict <- function(pattern, x = NULL, data, id = 'id', date = 'date',
                                         collapse = ""))
             tm <- do.call(grepict_rigid,
                 args = c(list('pattern' = pattern[i], 'x' = x, 'data' = DATA,
-                              'long' = long, 'verbose' = verbose,
-                              'paste.alias' = paste.alias),
+                              'include' = include, 'long' = long,
+                              'verbose' = verbose, 'paste.alias' = paste.alias),
                          .dots))
             if(stack){
                 R <- if(is.null(R)) tm else rbind(R, tm)

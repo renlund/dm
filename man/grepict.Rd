@@ -5,8 +5,8 @@
 \title{grep by individual contrained by time}
 \usage{
 grepict(pattern, x = NULL, data, id = "id", date = "date", units = NULL,
-  units.id = id, begin = "begin", end = "end", ..., long = TRUE,
-  stack = TRUE, verbose = TRUE)
+  units.id = id, begin = "begin", end = "end", include = c(TRUE, TRUE),
+  ..., long = TRUE, stack = TRUE, verbose = TRUE)
 }
 \arguments{
 \item{pattern}{a vector of search strings (regular expressions) (the names

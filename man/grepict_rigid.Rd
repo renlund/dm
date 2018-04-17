@@ -4,8 +4,8 @@
 \alias{grepict_rigid}
 \title{helper for grepict}
 \usage{
-grepict_rigid(pattern, x = NULL, data, ..., long = TRUE, verbose = TRUE,
-  paste.alias = TRUE)
+grepict_rigid(pattern, x = NULL, data, ..., include = c(TRUE, TRUE),
+  long = TRUE, verbose = TRUE, paste.alias = TRUE)
 }
 \arguments{
 \item{pattern}{a search string to pass to \code{grepl}}
@@ -15,11 +15,15 @@ applicable), if \code{NULL} all variables except 'id' and 'date' (which
 must exist) and 'begin' and 'end' (which might exist) are used as search
 variables}
 
-\item{data}{a data set that must contain 'id' and 'date', and
-optionally 'begin' and 'end'. If the latter are missing, the earliest
-and latest dates will be used, respectively.}
+\item{data}{a data set that must contain 'id' and 'date', and optionally
+'begin' and 'end'. If the latter are missing, the earliest and latest
+dates will be used, respectively.}
 
 \item{...}{arguments (beyond 'pattern' and 'x') passed to \code{grepl}}
+
+\item{include}{length 2 logical vector specifying if lower (first entry) and
+upper (second entry) bounds are inclusive (\code{TRUE}) or not
+(\code{FALSE})}
 
 \item{long}{output format, if \code{TRUE} all hits have separate row, else
 the emphasis is on the first hit for each 'id' (by 'date' and 'x'). N.B
@@ -36,8 +40,8 @@ override this behavour by setting this argument to zero}
 See \code{\link{grepict}} for details on output
 }
 \description{
-this is essentially a helper function for \code{grepict}, see the
-    documentation
+this is essentially a helper function for \code{grepict}, see
+    the documentation
 }
 \seealso{
 \code{\link{grepict}}, \code{\link[base]{grepl}}
