@@ -33,6 +33,10 @@ to earliest date in data}
 \item{end}{variable name in 'units' to use as end, if missing will be set to
 latest date in data}
 
+\item{include}{length 2 logical vector specifying if lower (first entry) and
+upper (second entry) bounds are inclusive (\code{TRUE}) or not
+(\code{FALSE})}
+
 \item{...}{arguments passed to \code{grepl}}
 
 \item{long}{if \code{TRUE} all matches will get a row, else first match gets
