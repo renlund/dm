@@ -126,11 +126,11 @@ dm_doc <- function(kill = FALSE, prompt = TRUE){
     }
 }
 
-##' add to dm documentation
-##'
-##' add list element to dm documentation (internal use)
-##' @param name name of new list element
-##' @param value value of new list element
+## add to dm documentation
+##
+## add list element to dm documentation (internal use)
+## @param name name of new list element
+## @param value value of new list element
 dm_doc_set <- function(name, value){
     L <- dm_doc()
     L[[name]] <- value
@@ -170,11 +170,11 @@ dm_filter <- function(kill = FALSE, prompt = TRUE){
     }
 }
 
-##' add to filter documentation
-##'
-##' add list element to filter documentation (internal use)
-##' @param name name of new list element
-##' @param value value of new list element
+## add to filter documentation
+##
+## add list element to filter documentation (internal use)
+## @param name name of new list element
+## @param value value of new list element
 dm_filter_set <- function(name, value){
     L <- dm_filter()
     L[[name]] <- value
@@ -215,11 +215,11 @@ dm_derive <- function(kill = FALSE, prompt = TRUE){
 }
 
 
-##' add to derive documentation
-##'
-##' add list element to derive documentation (internal use)
-##' @param name name of new list element
-##' @param value value of new list element
+## add to derive documentation
+##
+## add list element to derive documentation (internal use)
+## @param name name of new list element
+## @param value value of new list element
 dm_derive_set <- function(name, value){
     L <- dm_derive()
     L[[name]] <- value
