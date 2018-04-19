@@ -138,6 +138,26 @@ dm_filter2latexlist()
 ## ----"dmf-clust", fig.cap = "Test of cluster description"----------------
 dm_filter2dist(plot = TRUE)
 
+## ----"dmd"---------------------------------------------------------------
+ADB <- subset(CDB, dmf_create())
+ADB$age.gr <- dmd('age.gr',
+                  expr = cut(x = ADB$Age, breaks = c(0, 65, Inf),
+                             labels = c('young', 'old')),
+                  dmd = 'Age groups, below 65 is young, else old.')
+ADB$score <- with(ADB,
+                  expr = dmd('score',
+                             ifelse(gr %in% c('A', 'B') & Gender == 'Male', 1, 0),
+                             dmd = 'A score, no sense required.'))
+foo <- function(X){
+    X$OrderInGroup <- dmd('OrderInGroup', expr = order(X$Age),
+                          dmd = "The order of age within subgroup 'gr'.")
+    X
+}
+ADB <- do.call(rbind, lapply(split(ADB, ADB$gr), foo))
+
+## ----"dmd-show"----------------------------------------------------------
+dm_derive()
+
 ## ----'generate-data'-----------------------------------------------------
 POP <- data.frame(
     id = c('Anna', 'Barry', 'Christina',
