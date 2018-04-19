@@ -33,8 +33,8 @@ print.dm_derive <- function(x, ..., print = TRUE){
     X <- data.frame(
         variable = names(x),
         comment = unlist(lapply(x, function(z) z$dmd)),
-        label = unlist(lapply(x, function(z) z$label)),
-        expr = unlist(lapply(x, function(z) z$expr)),
+        ## label = unlist(lapply(x, function(z) z$label)),
+        ## expr = unlist(lapply(x, function(z) z$expr)),
         stringsAsFactors = FALSE, row.names = NULL
     )
     if(print){
