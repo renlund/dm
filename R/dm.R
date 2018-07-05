@@ -10,6 +10,7 @@
 #'     default setting in \code{opts_dm$get('default_db')}.
 #' @param recode recode \code{L} argument for recoding
 #' @param transf function, for transformation
+#' @param group character, a grouping of the variables
 #' @param comment character, a comment or some such extra information
 #' @param label character, something to be stored as label attribute for this
 #'     variable
@@ -17,7 +18,7 @@
 #'     be kept?  (only if \code{label} is \code{NULL})
 #' @export
 dm <- function(var, name = var, db = NULL, recode = NULL, transf = NULL,
-               comment = NULL, label = NULL, keep.label = TRUE){
+               group = NULL, comment = NULL, label = NULL, keep.label = TRUE){
     ## check that data base exists --------------------------------------------
     if(is.null(db)) db <- dm_get("default_db")
     if(is.null(db)){
@@ -137,6 +138,7 @@ dm <- function(var, name = var, db = NULL, recode = NULL, transf = NULL,
         var = var,
         db = db,
         transf = transf.char,
+        group = group,
         comment = comment,
         label = label_x,
         transf.fnc = transf,
@@ -148,6 +150,7 @@ dm <- function(var, name = var, db = NULL, recode = NULL, transf = NULL,
 }
 
 ##' @describeIn dm An alias for dm ('v' for 'variable')
+##' @export
 dmv <- dm
 
 ##' print 'dm_doc' object
@@ -157,24 +160,94 @@ dmv <- dm
 ##' @param x a 'dm_doc' object
 ##' @param ... arguments passed to print.data.frame
 ##' @param print if \code{FALSE} then an data frame is returned
+##' @param purge do not print empty fields
+##' @param group group output by 'group' (if it exists)
+##' @param grouping specify the order to group by (character vector), else as-is
 ##' @return possibly a data frame
 ##' @export
-print.dm_doc <- function(x, ..., print = TRUE){
+print.dm_doc <- function(x, ..., print = TRUE, purge = TRUE,
+                         group = TRUE, grouping = NULL){
     if(length(x) == 0){
         message("no variable documentation")
         return(invisible(NULL))
     }
+    cs <- c('name', 'var', 'db', 'transf', 'label', 'group', 'comment')
     X <- Reduce(rbind,
                 lapply(dm_doc(), function(x){
-                    y <- x[c('name', 'var', 'db', 'transf', 'label', 'comment')]
+                    y <- x[cs]
                     z <- lapply(y, function(x) if(is.null(x)) "" else x)
                     as.data.frame(z)
                 }))
     X[] <- lapply(X, function(x) as.character(x))
+    cs_empty <- NULL
+    ## remove empty information if wanted
+    if(purge){
+        for(k in seq_along(cs)){
+            if(all(X[[cs[k]]] == '')){
+                X[cs[k]] <- NULL
+                cs_empty <- c(cs_empty, cs[k])
+            }
+        }
+    }
+    ## order on group if non-empty
+    if(!is.null(X$group) & group){
+        if(is.null(grouping)){
+            g <- unique(X$group)
+            X$group <- factor(X$group, levels = g)
+            X <- X[order(X$group), ]
+        } else {
+            X$group <- X$group[order_as(given = X$group, wanted = grouping,
+                                        incl.unordered = TRUE)]
+        }
+    }
     if(print) {
+        if(!is.null(cs_empty)){
+            cat('Some doc fields (', paste0(cs_empty, collapse = ", "),
+                ') are empty.\n', sep = '')
+        }
         print(X, ...)
         invisible(NULL)
     } else X
+}
+
+## order_as is copied from package descripteur
+order_as <- function(given, wanted, incl.unordered = TRUE){
+    want <- wanted[wanted %in% given]
+    foo <- function(X) {
+        n <- nrow(X)
+        X$nr <- if(n==1) "" else 1:n
+        X$attention  <- if(n==1) 0 else c(rep(0, n-1), 1)
+        X$edited <- paste0(X$given, X$nr)
+        X
+    }
+    df <- data.frame(given = given, stringsAsFactors = FALSE)
+    spl <- lapply(split(df, f = df$given), foo)
+    dc <- unsplit(spl, f = df$given)
+    rownames(dc) <- NULL
+    sdc <- subset(dc, dc$attention == 1)
+    lw <- as.list(want)
+    names(lw) <- want
+    for(k in seq_along(sdc$given)){ ## k = 1
+        K <- as.character(sdc$given[k])
+        n <- sdc$nr[k]
+        lw[[K]] <- sprintf(paste0(lw[[K]], "%s"), 1:n)
+    }
+    W <- unlist(lw)
+    G <- dc$edited
+    indx <- match(W, G)
+    rest <- setdiff(1:length(given), indx)
+    if(incl.unordered){
+        c(indx, rest)
+    } else {
+        indx
+    }
+}
+
+if(FALSE){
+    x <- letters[c(1,2,1,1,2,3)]
+    x[order_as(x, letters[1:3])]
+    x[order_as(x, letters[3:1])]
+    x[order_as(x, letters[c(2,1,3)])]
 }
 
 ##' @title documentation as LaTeX
@@ -184,28 +257,44 @@ print.dm_doc <- function(x, ..., print = TRUE){
 ##' @param where argument for \code{Hmisc::latex}, default "htb"
 ##' @param rowname argument for \code{Hmisc::latex}, default \code{NULL}
 ##' @param ... passed to \code{Hmisc::latex}
+##' @param group group on 'group' (if it exists)
+##' @param grouping specify the order to group by (character vector), else as-is
 ##' @param which columns to print
 ##' @param code.key formatting code key
 ##' @export
 dm_doc2latex <- function(doc = NULL,
                          file = "", where = "htb", rowname = NULL, ...,
-                         which = c('name', 'var', 'db', 'label', 'comment'),
-                         code.key = c('name' = '\\texttt',
+                         group = TRUE, grouping = NULL,
+                         which = c('group', 'name', 'var', 'db', 'label', 'comment'),
+                         code.key = c('group'= '\\textbf',
+                                      'name' = '\\texttt',
                                       'var'  = '\\texttt',
                                       'db'   = '\\textbf',
                                       'comment' = '\\emph')){
     if(is.null(doc)){
-        doc <- print(dm_doc(), print = FALSE)
-    } else if(is.list(doc)) doc <- print(doc, print = FALSE)
+        doc <- print(dm_doc(), print = FALSE, group = group, grouping = grouping)
+    } else if(is.list(doc)){
+        doc <- print(doc, print = FALSE, group = group, grouping = grouping)
+    }
     if(length(doc) == 0) stop("[dm_create] doc empty")
     i <- which %in% names(doc)
     v <- which[i]
     if(length(v) == 0) stop("failure")
     d <- subset(doc, select = v)
+    g_copy <- as.character(d$group)
     for(K in names(d)){
         if(K %in% names(code.key)){
             d[[K]] <- texify(d[[K]], f = code.key[K])
         } else next
     }
-    Hmisc::latex(d, file = file, where = where, rowname = rowname, ...)
+    if(group){
+        rg <- rle(g_copy)
+        rownames(d) <- d$name
+        d$group <- NULL
+        d$name <- NULL
+        Hmisc::latex(d, file = file, where = where, title = 'name',
+                     rgroup = rg$values, n.rgroup = rg$lengths, ...)
+    } else {
+        Hmisc::latex(d, file = file, where = where, rowname = rowname, ...)
+    }
 }

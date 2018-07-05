@@ -38,7 +38,7 @@ dm_recode2latex <- function(doc = NULL, file = "",
                          where = where,
                          append = TRUE,
                          title = "old $\\downarrow$ new $\\rightarrow$",
-                         caption = paste0("Recoding of data base ",texify(X$where),
+                         caption = paste0("Recoding of data base ", texify(X$db),
                                           " entry ", texify(X$var)," into ",texify(X$name),"."),
                          label = paste0(lab.prefix, X$name),
                          ...)

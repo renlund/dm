@@ -4,7 +4,8 @@
 \alias{print.dm_doc}
 \title{print 'dm_doc' object}
 \usage{
-\method{print}{dm_doc}(x, ..., print = TRUE)
+\method{print}{dm_doc}(x, ..., print = TRUE, purge = TRUE, group = TRUE,
+  grouping = NULL)
 }
 \arguments{
 \item{x}{a 'dm_doc' object}
@@ -12,6 +13,12 @@
 \item{...}{arguments passed to print.data.frame}
 
 \item{print}{if \code{FALSE} then an data frame is returned}
+
+\item{purge}{do not print empty fields}
+
+\item{group}{group output by 'group' (if it exists)}
+
+\item{grouping}{specify the order to group by (character vector), else as-is}
 }
 \value{
 possibly a data frame

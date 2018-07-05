@@ -5,8 +5,9 @@
 \title{documentation as LaTeX}
 \usage{
 dm_doc2latex(doc = NULL, file = "", where = "htb", rowname = NULL, ...,
-  which = c("name", "var", "db", "label", "comment"), code.key = c(name =
-  "\\\\texttt", var = "\\\\texttt", db = "\\\\textbf", comment = "\\\\emph"))
+  group = TRUE, grouping = NULL, which = c("group", "name", "var", "db",
+  "label", "comment"), code.key = c(group = "\\\\textbf", name = "\\\\texttt",
+  var = "\\\\texttt", db = "\\\\textbf", comment = "\\\\emph"))
 }
 \arguments{
 \item{doc}{documentation}
@@ -18,6 +19,10 @@ dm_doc2latex(doc = NULL, file = "", where = "htb", rowname = NULL, ...,
 \item{rowname}{argument for \code{Hmisc::latex}, default \code{NULL}}
 
 \item{...}{passed to \code{Hmisc::latex}}
+
+\item{group}{group on 'group' (if it exists)}
+
+\item{grouping}{specify the order to group by (character vector), else as-is}
 
 \item{which}{columns to print}
 

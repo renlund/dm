@@ -6,10 +6,10 @@
 \title{Data Management Tool (interactive-ish)}
 \usage{
 dm(var, name = var, db = NULL, recode = NULL, transf = NULL,
-  comment = NULL, label = NULL, keep.label = TRUE)
+  group = NULL, comment = NULL, label = NULL, keep.label = TRUE)
 
 dmv(var, name = var, db = NULL, recode = NULL, transf = NULL,
-  comment = NULL, label = NULL, keep.label = TRUE)
+  group = NULL, comment = NULL, label = NULL, keep.label = TRUE)
 }
 \arguments{
 \item{var}{character, database/data frame entry}
@@ -22,6 +22,8 @@ default setting in \code{opts_dm$get('default_db')}.}
 \item{recode}{recode \code{L} argument for recoding}
 
 \item{transf}{function, for transformation}
+
+\item{group}{character, a grouping of the variables}
 
 \item{comment}{character, a comment or some such extra information}
 

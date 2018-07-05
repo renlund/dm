@@ -194,19 +194,19 @@ L <- list('A' = 'A2',
 ##           'B' = 'B',
 ##           'CD' = c('C', 'D', 'd1', 'something not in data'),
 ##           'Unknown' = c('unknown', NA))
-dmv('gr', recode = L, label = 'Group')
+dmv('gr', recode = L, label = 'Group', group = 'Foo things')
 @
 
 Next, we add some more variables (but hide the output)
 <<"add-rest", echo = TRUE, results = 'hide'>>=
-dmv('aalder', 'Age')
-dmv('nar', 'When', comment = "wtf?")
+dmv('aalder', 'Age', group = 'Bar stuff')
+dmv('nar', 'When', comment = "wtf?", group = 'Bar stuff')
 dmv('foo', 'event', db = 'COMP',
    recode = list('No' = '0', 'Yes' = 1),
-   label = "An event at some time")
-dmv('bar', 'time', db = 'COMP', transf = log)
+   label = "An event at some time", group = 'Foo things')
+dmv('bar', 'time', db = 'COMP', transf = log, group = 'Bar stuff')
 dmv('koon', 'Gender',
-   recode = list('Male' = 'M', 'Female' = 'K'))
+   recode = list('Male' = 'M', 'Female' = 'K'), group = 'Bar stuff')
 @
 When we are done, we create the CDB with
 

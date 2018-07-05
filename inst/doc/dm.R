@@ -16,11 +16,11 @@ if(FALSE){ ## create document
 #  opts_dm$set('default_db' = 'MyDataBase')
 
 ## ----"no-eval-dm", echo = TRUE, eval = FALSE-----------------------------
-#  dm(var = 'gEndEr', name = 'gender', label = "Perceived Gender")
+#  dmv(var = 'gEndEr', name = 'gender', label = "Perceived Gender")
 #      ## is followed by information being printed
 
 ## ----"no-eval-dm2", echo = TRUE, eval = FALSE----------------------------
-#  dm('gEndEr', 'gender', label = "Biological Gender") ## overwrites
+#  dmv('gEndEr', 'gender', label = "Biological Gender") ## overwrites
 #      ## the 'gender' entry
 
 ## ----"no-eval-dm3", echo = TRUE, eval = FALSE----------------------------
@@ -83,17 +83,17 @@ L <- list('A' = 'A2',
 ##           'B' = 'B',
 ##           'CD' = c('C', 'D', 'd1', 'something not in data'),
 ##           'Unknown' = c('unknown', NA))
-dm('gr', recode = L, label = 'Group')
+dmv('gr', recode = L, label = 'Group', group = 'Foo things')
 
 ## ----"add-rest", echo = TRUE, results = 'hide'---------------------------
-dm('aalder', 'Age')
-dm('nar', 'When', comment = "wtf?")
-dm('foo', 'event', db = 'COMP',
+dmv('aalder', 'Age', group = 'Bar stuff')
+dmv('nar', 'When', comment = "wtf?", group = 'Bar stuff')
+dmv('foo', 'event', db = 'COMP',
    recode = list('No' = '0', 'Yes' = 1),
-   label = "An event at some time")
-dm('bar', 'time', db = 'COMP', transf = log)
-dm('koon', 'Gender',
-   recode = list('Male' = 'M', 'Female' = 'K'))
+   label = "An event at some time", group = 'Foo things')
+dmv('bar', 'time', db = 'COMP', transf = log, group = 'Bar stuff')
+dmv('koon', 'Gender',
+   recode = list('Male' = 'M', 'Female' = 'K'), group = 'Bar stuff')
 
 ## ----"create"------------------------------------------------------------
 CDB <- dm_create(set = BL$id,

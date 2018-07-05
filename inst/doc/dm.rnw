@@ -30,14 +30,14 @@ if(FALSE){ ## create document
 
 \newpage
 \section{Documentation}
-Sections \ref{sec:dm}, \ref{sec:dmf} and \ref{sec:dmd} deal with functions
+Sections \ref{sec:dmv}, \ref{sec:dmf} and \ref{sec:dmd} deal with functions
 relating to documentation of (certain aspects of) data management. These
 functions all try to incorporate documentation as close to the actual code as
 possible, so that when you change the code, the documentation should be there,
 staring you in the face, demanding to be similarily updated. It is far from
 clear how to do this efficiently\ldots
 
-\subsection{\texttt{dm} and related functions}\label{sec:dm}
+\subsection{\texttt{dmv} and related functions}\label{sec:dmv}
 
 \subsubsection{The problem we want to solve}
 A statistical report sometimes build an \emph{clinical data base} (CDB) from
@@ -45,14 +45,14 @@ multiple sources, collects variables that might need to be renamed and (if
 categorical) recoded (and possibly transformed), the documentation of which is
 \emph{significantly boring}.
 
-The \texttt{dm} functions is an interactive-ish way of creating an CDB which
+The \texttt{dmv} functions is an interactive-ish way of creating an CDB which
 both inspects the chosen variables and ``documents'' the process.
 
 \subsubsection{The elevator pitch}
 \ldots assuming \LaTeX
 \begin{enumerate}
 \item point to variables (from possibly different sources), one at the time,
-  with \verb|dm| (along with possible renaming, recoding and
+  with \verb|dmv| (along with possible renaming, recoding and
   transformation). (Use \verb|dm_find| to look for candidate variables.) This
   gives a summary of the variable pointed to\footnote{Typically one wants to to
     this procedure anyway to sanity check all variables that are to be
@@ -70,7 +70,7 @@ If most variables are picked form the same source, this can be set in options.
 <<"no-eval-opts", echo = TRUE, eval = FALSE>>=
 opts_dm$set('default_db' = 'MyDataBase')
 @
-If that is done, \texttt{dm} only needs a \texttt{var} argument, the name of the
+If that is done, \texttt{dmv} only needs a \texttt{var} argument, the name of the
 var you want to add. But you can use
 \begin{itemize}
   \item \verb|var|, name of variable in source
@@ -89,10 +89,10 @@ var you want to add. But you can use
   \item \verb|keep.label| if \verb|var| already has a label in \verb|db|, should
     this be kept? (only if no \verb|label| is provided)
 \end{itemize}
-Then as \texttt{dm} is evaluated, information about the variable is printed (to
+Then as \texttt{dmv} is evaluated, information about the variable is printed (to
 see range, levels and such).
 <<"no-eval-dm", echo = TRUE, eval = FALSE>>=
-dm(var = 'gEndEr', name = 'gender', label = "Perceived Gender")
+dmv(var = 'gEndEr', name = 'gender', label = "Perceived Gender")
     ## is followed by information being printed
 @
 
@@ -102,7 +102,7 @@ an environment "dm\_envir").\footnote{This is due to it being poor practice to
 The key is the 'name' element, so as long as that is not changed, you can rerun
 the function with new arguments if something went wrong
 <<"no-eval-dm2", echo = TRUE, eval = FALSE>>=
-dm('gEndEr', 'gender', label = "Biological Gender") ## overwrites
+dmv('gEndEr', 'gender', label = "Biological Gender") ## overwrites
     ## the 'gender' entry
 @
 Else, kill all documentation and start again
@@ -194,19 +194,19 @@ L <- list('A' = 'A2',
 ##           'B' = 'B',
 ##           'CD' = c('C', 'D', 'd1', 'something not in data'),
 ##           'Unknown' = c('unknown', NA))
-dm('gr', recode = L, label = 'Group')
+dmv('gr', recode = L, label = 'Group', group = 'Foo things')
 @
 
 Next, we add some more variables (but hide the output)
 <<"add-rest", echo = TRUE, results = 'hide'>>=
-dm('aalder', 'Age')
-dm('nar', 'When', comment = "wtf?")
-dm('foo', 'event', db = 'COMP',
+dmv('aalder', 'Age', group = 'Bar stuff')
+dmv('nar', 'When', comment = "wtf?", group = 'Bar stuff')
+dmv('foo', 'event', db = 'COMP',
    recode = list('No' = '0', 'Yes' = 1),
-   label = "An event at some time")
-dm('bar', 'time', db = 'COMP', transf = log)
-dm('koon', 'Gender',
-   recode = list('Male' = 'M', 'Female' = 'K'))
+   label = "An event at some time", group = 'Foo things')
+dmv('bar', 'time', db = 'COMP', transf = log, group = 'Bar stuff')
+dmv('koon', 'Gender',
+   recode = list('Male' = 'M', 'Female' = 'K'), group = 'Bar stuff')
 @
 When we are done, we create the CDB with
 
