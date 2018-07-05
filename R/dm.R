@@ -147,6 +147,9 @@ dm <- function(var, name = var, db = NULL, recode = NULL, transf = NULL,
     invisible(NULL)
 }
 
+##' @describeIn dm An alias for dm ('v' for 'variable')
+dmv <- dm
+
 ##' print 'dm_doc' object
 ##'
 ##' prints a data frame version of selected info in a 'dm_doc' object or returns

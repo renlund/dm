@@ -2,9 +2,13 @@
 % Please edit documentation in R/dm.R
 \name{dm}
 \alias{dm}
+\alias{dmv}
 \title{Data Management Tool (interactive-ish)}
 \usage{
 dm(var, name = var, db = NULL, recode = NULL, transf = NULL,
+  comment = NULL, label = NULL, keep.label = TRUE)
+
+dmv(var, name = var, db = NULL, recode = NULL, transf = NULL,
   comment = NULL, label = NULL, keep.label = TRUE)
 }
 \arguments{
@@ -34,3 +38,8 @@ This creates a list of data management information (defaults to
     be used to extract and recode (factors and dates) for (or towards) an
     analytical data base.
 }
+\section{Functions}{
+\itemize{
+\item \code{dmv}: An alias for dm
+}}
+
