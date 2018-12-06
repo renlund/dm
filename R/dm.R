@@ -173,9 +173,9 @@ print.dm_doc <- function(x, ..., print = TRUE, purge = TRUE,
     }
     cs <- c('name', 'var', 'db', 'transf', 'label', 'group', 'comment')
     X <- Reduce(rbind,
-                lapply(dm_doc(), function(x){
-                    y <- x[cs]
-                    z <- lapply(y, function(x) if(is.null(x)) "" else x)
+                lapply(x, function(v){
+                    y <- v[cs]
+                    z <- lapply(y, function(w) if(is.null(w)) "" else w)
                     as.data.frame(z)
                 }))
     X[] <- lapply(X, function(x) as.character(x))
