@@ -95,9 +95,9 @@ match_combine <- function(x, y, id, cl, tr, trv = 1, progress = FALSE){
         R$wate.tr[i] <- size / (3 * R$tr_n[i])
         R$wate.ctrl1[i] <- size / (3 * R$ctrl1_n[i])
         R$wate.ctrl2[i] <- size / (3 * R$ctrl2_n[i])
-        R$watt.tr[i] <- tr_size / (3 * R$tr_n[i])
-        R$watt.ctrl1[i] <- tr_size / (3 * R$ctrl1_n[i])
-        R$watt.ctrl2[i] <- tr_size / (3 * R$ctrl2_n[i])
+        R$watt.tr[i] <- 1 ## tr_size / R$tr_n[i]
+        R$watt.ctrl1[i] <- tr_size / R$ctrl1_n[i]
+        R$watt.ctrl2[i] <- tr_size / R$ctrl2_n[i]
     }
     if(P) cat("\n... finishing up\n")
     X <- merge(df1, R[!duplicated(R$cl1),
