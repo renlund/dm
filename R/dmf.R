@@ -54,9 +54,11 @@ fperc <- function(p){
 ##' @param ... arguments passed to print.data.frame
 ##' @param print if \code{FALSE} then an data frame is returned
 ##' @param seq order in which to look at the filters
+##' @param id id-vector for units, necessarily in the same order as filter
+##' @param verbose logical, want funtion to provide messages?
 ##' @return possibly a data frame
 ##' @export
-print.dm_filter <- function(x, ..., print = TRUE, seq = NULL){
+print.dm_filter <- function(x, ..., print = TRUE, seq = NULL, id = NULL, verbose = TRUE){
     if(length(x) == 0){
         message("no filtering documentation")
         return(invisible(NULL))
@@ -70,24 +72,90 @@ print.dm_filter <- function(x, ..., print = TRUE, seq = NULL){
         warning("seq doesn't cover all filters")
     }
     fs <- as.data.frame(lapply(x[seq], function(z) z$filter))
-    N <- nrow(fs)
-    inc <- c(N, unlist(lapply(fs, sum)))
-    exc <- N - inc
     R <- Reduce(f = `&`, x = fs, init = rep(TRUE, nrow(fs)), accumulate = TRUE)
-    seqinc <- unlist(lapply(R, sum))
-    seqexc <- c(0, abs(diff(seqinc, differences = 1)))
-    X <- data.frame(
-        criteria = c('Population', names(x)[seq]),
-        incl = inc,
-        excl = exc,
-        seq.incl = seqinc,
-        seq.excl = seqexc,
-        row.names = NULL
-    )
+    if(is.null(id)){
+        mess <- paste0("## Filter applied to rows:")
+        N <- nrow(fs)
+        inc <- c(N, unlist(lapply(fs, sum)))
+        exc <- N - inc
+        seqinc <- unlist(lapply(R, sum))
+        seqexc <- c(0, abs(diff(seqinc, differences = 1)))
+        X <- data.frame(
+            criteria = c('Population', names(x)[seq]),
+            incl = inc,
+            excl = exc,
+            seq.incl = seqinc,
+            seq.excl = seqexc,
+            row.names = NULL
+        )
+    } else {
+        mess <- paste0("## Filter applied to units:")
+        id.N <- length(unique(id))
+        id.inc <- c(id.N, unlist(lapply(x[seq], function(z) length(unique(id[z$filter])))))
+        id.exc <- id.N - id.inc
+        id.seqinc <- unlist(lapply(R, function(z) length(unique(id[z]))))
+        id.seqexc <- c(0, abs(diff(id.seqinc, differences = 1)))
+        X <- data.frame(
+            criteria = c('Population', names(x)[seq]),
+            incl = id.inc,
+            excl = id.exc,
+            seq.incl = id.seqinc,
+            seq.excl = id.seqexc,
+            row.names = NULL
+        )
+    }
     if(print){
+        if(verbose) message(mess)
         print(X, ...)
         invisible(NULL)
     } else X
+}
+
+
+if(FALSE){
+    set.seed(20190109)
+    n = 100
+    df <- data.frame(
+        id = sample(1:(n/2), n, TRUE),
+        x = runif(n),
+        y = sample(letters[1:4], n, TRUE),
+        z = rbinom(n, 1, .1),
+        stringsAsFactors = FALSE
+    )
+    x = list(
+        list(filter = df$x > 0.5),
+        list(filter = df$y == "c"),
+        list(filter = df$z == 0)
+    )
+    A <- df[x[[1]][[1]], ]
+    B <- df[x[[2]][[1]], ]
+    AB <- df[x[[1]][[1]] & x[[2]][[1]] , ]
+    C <- df[x[[3]][[1]], ]
+    ABC <- df[x[[1]][[1]] & x[[2]][[1]] & x[[3]][[1]], ]
+    printfilt(x)
+    ## -----
+    nrow(df)
+    nrow(A)
+    nrow(B)
+    nrow(C)
+    ## -----
+    nrow(df)
+    nrow(A)
+    nrow(AB)
+    nrow(ABC)
+    ## ----------
+    printfilt(x, id = df$id)
+    ## -----
+    length(unique(df$id))
+    length(unique(A$id))
+    length(unique(B$id))
+    length(unique(C$id))
+    ## -----
+    length(unique(df$id))
+    length(unique(A$id))
+    length(unique(AB$id))
+    length(unique(ABC$id))
+    rm(n, df, x, A, B, AB, C, ABC)
 }
 
 ##' @title filtering as latex list
@@ -104,9 +172,12 @@ dm_filter2latexlist <- function(f = NULL){
     ns <- unlist(lapply(f, function(x) x$n))
     if(!all(ns == ns[1])) stop("n differ")
     bar <- function(x){
-        paste0("\\texttt{", gsub("_", "\\_", x$name, fixed = TRUE),
+        paste0("\\texttt{",
+               gsub("_", "\\_", x$name, fixed = TRUE),
                "} '", x$comment, "'",
-               " includes ", x$perc, " (", x$rows, " rows)")
+               " includes ",
+               gsub(">", "$>$", x$perc, fixed = TRUE),
+               " (", x$rows, " rows)")
     }
     l <- unlist(lapply(f, bar))
     texList <- paste0("\\begin{itemize}\n",

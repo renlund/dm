@@ -4,7 +4,8 @@
 \alias{print.dm_filter}
 \title{print 'dm_filter' object}
 \usage{
-\method{print}{dm_filter}(x, ..., print = TRUE, seq = NULL)
+\method{print}{dm_filter}(x, ..., print = TRUE, seq = NULL, id = NULL,
+  verbose = TRUE)
 }
 \arguments{
 \item{x}{a 'dm_filter' object}
@@ -14,6 +15,10 @@
 \item{print}{if \code{FALSE} then an data frame is returned}
 
 \item{seq}{order in which to look at the filters}
+
+\item{id}{id-vector for units, necessarily in the same order as filter}
+
+\item{verbose}{logical, want funtion to provide messages?}
 }
 \value{
 possibly a data frame
