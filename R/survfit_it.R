@@ -142,11 +142,84 @@ make_glist <- function(x, ref = NULL){
     }
     g
 }
+##' at risk counter
+##'
+##' count individuals at risk and (cumulative) events at given time points
+##' @param x an object created by \code{survfit_it} or equivalent
+##' @param tp timepoints wanted
+##' @param tidy output in tidy format (default \code{FALSE})
+##' @return a data frame
+##' @importFrom stats reshape
+##' @export
+at_risk <- function(x, tp = NULL, tidy = FALSE){
+    dummy <- FALSE
+    LO <- if(is.factor(x$outcome)){
+              dummy <- TRUE
+              levels(x$outcome)
+          } else unique(x$outcome)
+    LS <- if(is.factor(x$strata)) levels(x$strata) else unique(x$strata)
+    LG <- if(is.factor(x$group)) levels(x$group) else unique(x$group)
+    x$outcome <- as.character(x$outcome)
+    x$strata <- as.character(x$strata)
+    x$group <- as.character(x$group)
+    R <- NULL
+    for(O in LO){ ## O = LO[1]
+        for(S in LS){ ## S = LS[1]
+            for(G in LG){ ## G = LG[1]
+                for(t in tp){ ## t = tp[2]
+                    sel1 <- x$outcome == O & x$strata == S &
+                        x$group == G
+                    sel2 <- x$time <= t
+                    d <- subset(x, sel1 & sel2)
+                    r <- if(any(sel1 & sel2)) min(d$n.risk) else max(x$n.risk[sel1])
+                    e <- if(any(sel1 & sel2)) sum(d$n.event) else 0
+                    tmp <- data.frame(
+                        outcome = O,
+                        strata = S,
+                        group = G,
+                        time = t,
+                        at.risk = r,
+                        event = e,
+                        stringsAsFactors = FALSE
+                    )
+                    R <- if(is.null(R)) tmp else rbind(R, tmp)
+                }
+            }
+        }
+    }
+    if(dummy){
+        R$outcome <- factor(R$outcome, levels = LO)
+        R$strata <- factor(R$strata, levels = LS)
+        R$group <- factor(R$group, levels = LG)
+    }
+    if(tidy){
+        R
+    } else {
+        a <- reshape(data = subset(R, TRUE, select = setdiff(names(R), "event")),
+                     idvar = c("outcome", "strata", "group"),
+                     direction = 'wide', timevar = 'time', v.names = 'at.risk')
+        names(a) <- gsub("at.risk.", "time.", names(a), fixed = TRUE)
+        a$count = "at.risk"
+        b <- reshape(data = subset(R, TRUE, select = setdiff(names(R), "at.risk")),
+                     idvar = c("outcome", "strata", "group"),
+                     direction = 'wide', timevar = 'time', v.names = 'event')
+        names(b) <- gsub("event.", "time.", names(b), fixed = TRUE)
+        b$count <- "event"
+        n <- c("outcome", "strata", "group", "count")
+        m <- setdiff(names(a), n)
+        P <- subset(rbind(a, b), TRUE, select = c(n,m))
+        if(dummy) P$count <- factor(P$count, levels = c("at.risk", "event"))
+        Q <- P[order(P$outcome, P$strata, P$group, P$count), ]
+        rownames(Q) <- NULL
+        Q
+    }
+}
+
 
 if(FALSE){
 
     n = 3*1000
-    df <- data_frame(
+    df <- data.frame(
         t.foo = abs(rnorm(n, 10, 2)),
         ev.foo = rbinom(n, 1, 0.2),
         t.bar = abs(rnorm(n, 10, 3)),
@@ -156,10 +229,12 @@ if(FALSE){
         wait = .5 + abs(rnorm(n, 0, 1))
     )
     X <- survfit_it(data = df, surv = c("foo", "bar"),
-                   w = "wait",
+                   ## w = "wait",
                    strata = "strutt", glist = "gsak")
     ggplot(X, aes(time, estimate, color = strata)) +
         geom_line() +
         facet_grid(outcome ~ group)
+
+    (ar <- at_risk(x = X, tp = c(5, 10, 15), tidy = FALSE)) ## XK KOLLA DETTA)
 
 }
