@@ -7,6 +7,7 @@
 ##' @param n a maximum number of characters
 ##' @param linebreak defaults to newline \code{"\n"}
 ##' @param splitby defaults to space \code{" "}
+##' @param max.it maximum number of iteration of a while loop
 ##' @return character vector
 ##' @examples
 ##'     s <- paste0("En very long and perhaps supercalifragilisticexpialidocious",
@@ -16,36 +17,49 @@
 ##'     cat(insert_linebreak(s, n = 7))
 ##'     cat(insert_linebreak(s, n = 100))
 ##' @export
-insert_linebreak <- function(s, n, linebreak = "\n", splitby = " "){
-    .required_properties(x = s, class = "character", length = 1)
+insert_linebreak <- function(s, n, linebreak = "\n", splitby = " ", max.it = 10000){
+    .required_properties(x = s, class = "character")
     .required_properties(x = n, class = "numeric", length = 1)
     if(n < 1) stop("need n > 0")
-    x <- unlist(strsplit(s, splitby))
-    xn <- unlist(lapply(x, nchar))
-    cxn <- cumsum(xn)
-    is <- NULL
-    dummy <- 0
-    while(length(cxn) > 0 & dummy < 100000){
-        dummy <- dummy + 1
-        if(cxn[1] <= n){
-            m <- max(cxn[cxn <= n])
-            i <- which(cxn == m)
+    ORIGINAL <- s
+    R <- rep(NA_character_, length(ORIGINAL))
+    for(index in seq_along(s)){ ## index = 1
+        s <- ORIGINAL[index]
+        x <- unlist(strsplit(s, splitby))
+        xn <- unlist(lapply(x, nchar))
+        cxn <- cumsum(xn)
+        is <- NULL
+        dummy <- 0
+        while(length(cxn) > 0 & dummy < max.it){
+            dummy <- dummy + 1
+            if(cxn[1] <= n){
+                m <- max(cxn[cxn <= n])
+                i <- which(cxn == m)
+            } else {
+                m <- cxn[1]
+                i <- 1
+            }
+            cxn <- (cxn - m)[cxn-m > 0]
+            is <- c(is, i)
+        }
+        R[index] <- if(length(is) > 1){
+            id <- 1
+            S <- NULL
+            for(i in is){ ## i = is[1]
+                S <- c(S, paste0(x[id:(id+i-1)], collapse = splitby))
+                id <- id + i
+            }
+            paste0(S, collapse = linebreak)
         } else {
-            m <- cxn[1]
-            i <- 1
+            s
         }
-        cxn <- (cxn - m)[cxn-m > 0]
-        is <- c(is, i)
     }
-    if(length(is) > 1){
-        id <- 1
-        S <- NULL
-        for(i in is){ ## i = is[1]
-            S <- c(S, paste0(x[id:(id+i-1)], collapse = splitby))
-            id <- id + i
-        }
-        paste0(S, collapse = linebreak)
-    } else {
-        s
-    }
+    R
+}
+
+if(FALSE){
+    s = c("Suslf nk fsdnjk fnsdnj  sdjkfnk sjdnf",
+          "asjkdb  abhasdjb jas asbh adsbh jad",
+          "sd IUAHFIASHF IAH ASFK ndf ksd")
+    insert_linebreak(s, n = 12)
 }
