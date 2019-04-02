@@ -1,0 +1,211 @@
+%\VignetteEngine{knitr::knitr}
+%\VignetteIndexEntry{combine matchings}
+\documentclass{article}
+
+<<'Setup', cache=FALSE, echo=FALSE, include=FALSE>>=
+##rm(list=ls())
+library(dm)
+library(knitr)
+## .load_only <- TRUE
+## if(.load_only){
+##     devtools::load_all()
+## } else {
+##     library(dm)
+## }
+set.seed(19790424)
+opts_knit$set(eval.after=c('fig.cap'))
+opts_chunk$set(include = FALSE, echo = FALSE)
+if(FALSE){ ## create document
+    knitr::knit2pdf('match-combine.rnw')
+}
+@
+
+\title{dm}
+\author{Henrik Renlund}
+\newcommand{\code}{\texttt}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\setcounter{section}{-1}
+\section{About}
+A document about \verb|match_combine| from the \verb|dm|
+package\footnote{https://github.com/renlund/dm}. Clearly not finished.
+
+\section{Matching}
+Consider a case group that has two potential control groups $A$ and $B$.  If a
+mathing has been made between the cases and each control group, possibly with
+varying number of cases and controls in each cluster, then there is a
+straightforward way to combine these.
+
+
+\subsection{Combined matching algorithm}
+In match $A$ we have treated and control group 1 (in clusters
+$A_1, A_2, \ldots, A_{N}$) and in match $B$ we have (the same) treated and
+control group 2 (in clusters $B_1, B_2, \ldots, B_M$).
+
+We now create a cluster $C_k$ by starting from some cluster $A_i$ (initially
+$k=1$ and $i=1$, but these indices might not match up later on),
+\begin{itemize}
+\item[(a)] add all controls (from control group 1) and treated, denote the
+  latter $T$, in $A_i$. (We keep track on individuals by some unique identifier
+  so that we if we collect the same individual more than once, we will in fact
+  only keep one copy.)
+\item[(b)] now consider the set of all cluster $B' = \{B_{i_1}, \ldots, B_{i_m}\}$
+  that contains at least one individual in $T$: add all controls (from control
+  group 2) and treated, denote the latter $T'$, that are in some cluster in $B'$.
+\item[(c)] Now, if $T$ and $T'$ contain the same set of treated, this step is done
+  (you go on to create $C_{k+1}$ from $A_{i+1}$). Otherwise, you have some
+  individuals in $T''=T'\backslash T$, and a corresponding set of $A$-clusters
+  $A'=\{A_{j_1}, \ldots, A_{j_n}\}$, to which the individuals in $T''$ belong.
+\item[(d)] repeat (a)-(d) for each cluster in $A'$. (For effectiveness, remove each such
+  an $A$-cluster from future consideration when creating $C$-clusters.)
+\end{itemize}
+This process will create between 1 and $\min(N, M)$ $C$-clusters.
+
+\subsection{Weights}
+\noindent\textbf{'Average Treatment Effect'-weight:}
+A cluster containing $t$ treated, $a$ control 1, $b$ control 2 can be ATE-weighted,
+\begin{itemize}
+\item treated: $(t+a+b) / 3t$,
+\item control 1: $(t+a+b) / 3a$, and
+\item control 2: $(t+a+b) / 3b$,
+\end{itemize}
+so as to resemble the population at large. Each cluster will be balanced, with an
+ATE-weight equal to the size of (number of individuals in) the cluster. Thus
+the total ATE-weight in the population is the population size.
+
+\vspace{0.3cm}
+\noindent\textbf{'Average Treatment effect for the Treated'-weight:}
+A cluster containing $t$ treated, $a$ control 1, $b$ control 2 can be ATT-weighted,
+\begin{itemize}
+\item treated: 1
+\item control 1: $t/a$, and
+\item control 2: $t/b$,
+\end{itemize}
+so as to resemble the treated group. Each cluster is balanced, with a total
+weight of 3 times the number of cases.  Thus the total weight in the population
+is the 3 times the number of cases.
+
+
+<<"make-fig-cap">>=
+CAP <- paste0("8 'treated' individuals $(t_1, \\ldots, t_8)$, have two",
+              " different set of controls; $a_1, \\ldots, a_8$ and ",
+              "$b_1, \\ldots, b_7$. The graph shows matching (with",
+              " variable number of cases and controls) with both control sets and",
+              " where the dotted rectangles show they can be combined. ",
+              " E.g. $t_3$ is matched to $a_4$ and $a_5$ (cluster $A_3$),",
+              " and $t_4$ to $a_6$ (cluster $A_4$),",
+              " but to the other control group both $t_3$ and $t_4$ is",
+              " matched to $b_3$ (cluster $B_3$). In the combined",
+              " matching all these individuals ",
+              " will be in the same cluster ($C_3$).")
+@
+
+<<"make-fig", include = TRUE, fig.cap = CAP, fig.height = 9>>=
+
+.def <- par(mar = c(0,0,0,0))
+.c1 <- 4
+.a <- .3
+.b <- .1
+.c <- .4
+.w <- 3
+.d <- (1-.a) / 2
+baz <- function(s, seq = 1:8){
+    eval(parse(text = paste0("c(", paste0("expression(", paste0(s, "[", seq, "]"), ")", collapse = ", "), ")")))
+}
+
+plot(x = 1, type = 'n', xlim = c(0.4,3.5), ylim = c(0.6,8.4),
+     xlab = '', ylab = '', axes = FALSE)
+## treatment
+points(rep(2,8),8:1, cex = .c1, lwd = .w)
+##text(rep(2,8), 8:1, labels = sprintf("t%s", 1:8))
+text(rep(2,8), 8:1, labels = baz("t"))
+## control B
+points(c(rep(3,5), 3-.a, 3+.a), c(8,7, 5.5, 4, 2.5, 1,1),
+       cex = .c1, lwd = .w, col = "#DC6511")
+text(c(rep(3,5), 3-.a, 3+.a), c(8,7, 5.5, 4, 2.5, 1,1),
+     labels = baz("b", 1:7))
+## control A
+points(c(1,rep(c(1-.a,1+.a),2),1,1,1), c(8,7,7,6,6,5, 3.5,1.5),
+       cex = .c1, lwd = .w, col = "#61A60E")
+text(c(1,rep(c(1-.a,1+.a),2),1,1,1), c(8,7,7,6,6,5, 3.5,1.5),
+     labels = baz("a"))
+## line segments
+segments(c(1,2,2,1,2,1-.a,1+.a,1-.a,1+.a,2,3-.a)+.b,
+         c(8,8,7,5,4,7,7,6,6,1,1),
+         c(2,3,3,2,3,1+.a,2,1+.a,2,3-.a,3+.a)-.b,
+         c(8,8,7,5,4,7,7,6,6,1,1))
+segments(c(2,2,2,2,1,1,1,1)+.b,
+         c(6,5,3,2,3.5,3.5,1.5,1.5),
+         c(3,3,3,3,2,2,2,2)-.b,
+         c(5.5,5.5,2.5,2.5,4,3,2,1))
+## mark new combined clusters
+rect(rep(.5,4),
+     c(1-.c,5-.c,7-.c, 8-.c),
+     rep(3.5,4),
+     c(4+.c, 6+.c, 7+.c, 8+.c),
+     lty = 2)
+text(x = rep(0.4,4), y = c(8.3,7.3,6.3,4.3), label = baz("C",1:4))
+## original cluster
+text(rep(1,6)+.a+.d, c(8,7,6,5,3.4,1.4) + .17, baz("A", 1:6))
+text(rep(3,6)-.a-.d, c(8,7,5.4,4,2.4,1) + .17, baz("B", 1:6))
+
+
+##text(1:2,1:2,c(expression(a[1]), expression(a[2])))
+
+par(.def)
+@
+
+\clearpage
+<<"create-data", echo = TRUE>>=
+A <- data.frame(
+    id =  c(sprintf("t%s", 1:8), sprintf("a%s", 1:8)),
+    tr = rep(1:0, c(8,8)),
+    cl = sprintf("A%s", c(1:4,5,5,6,6, 1,2,2,3,3,4,5,6)),
+    stringsAsFactors = FALSE
+)
+B <- data.frame(
+    ID = c(sprintf("t%s", 1:8), sprintf("b%s", 1:7)),
+    TR = rep(1:0, c(8,7)),
+    CL = sprintf("B%s", c(1,2,3,3,4,5,5,6, 1:6,6)),
+    stringsAsFactors = FALSE
+)
+@
+
+<<"show-A", include = TRUE>>=
+kable(A[order(A$cl),], caption = "Matching with A.", row.names = FALSE)
+@
+
+<<"show-B", include = TRUE>>=
+kable(B[order(B$CL),], caption = "Matching with B.", row.names = FALSE)
+@
+
+\clearpage
+<<"show-comb", echo = TRUE, include = TRUE>>=
+MC <- match_combine(x = A,
+                    y = B,
+                    id = c('id', 'ID'),
+                    cl = c('cl', 'CL'),
+                    tr = c('tr', 'TR'),
+                    trv = 1,
+                    progress = FALSE)
+MC$data
+
+lapply(
+    split(MC$data, MC$data$comb.clust),
+    function(x){
+        data.frame(
+            n = nrow(x),
+            tr = sum(x$group == "case"),
+            ATE = sum(x$ATE.weight),
+            ATT = sum(x$ATT.weight)
+        )
+    }
+)
+
+@
+
+
+\end{document}
