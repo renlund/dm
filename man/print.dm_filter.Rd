@@ -4,8 +4,8 @@
 \alias{print.dm_filter}
 \title{print 'dm_filter' object}
 \usage{
-\method{print}{dm_filter}(x, ..., print = TRUE, seq = NULL, id = NULL,
-  verbose = TRUE)
+\method{print}{dm_filter}(x, ..., print = TRUE, seq = NULL,
+  id = NULL, verbose = TRUE)
 }
 \arguments{
 \item{x}{a 'dm_filter' object}

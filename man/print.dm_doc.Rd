@@ -4,8 +4,8 @@
 \alias{print.dm_doc}
 \title{print 'dm_doc' object}
 \usage{
-\method{print}{dm_doc}(x, ..., print = TRUE, purge = TRUE, group = TRUE,
-  grouping = NULL)
+\method{print}{dm_doc}(x, ..., print = TRUE, purge = TRUE,
+  group = TRUE, grouping = NULL)
 }
 \arguments{
 \item{x}{a 'dm_doc' object}

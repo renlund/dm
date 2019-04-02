@@ -3,16 +3,16 @@
 ##' combine two or more Surv objects into a combined Surv object
 ##' @title Surv combine
 ##' @param ... Surv objects
-##' @param comb.type how the Surv objects are combined. 'EELC' thinks of the
-##'     Surv objects as informative of each other, e.g. if the first observation
-##'     in the first row is censored at 1 for the first variable and at 2 for
-##'     the second variable, then the combination will pick the second one. More
-##'     specifically, it will pick the earliest event (as an event) if there is
-##'     at least one event, and it will pick the latest censored (as censored)
-##'     if there are no events. 'earlist' thinks of the Surv objects as being
-##'     very distinct, so it will simply pick the earliest time (as event or
-##'     censored).
-##' @param surv.output return a Surv object (default \code{TRUE}), else a data
+##' @param  comb.type how the Surv  objects are combined. 'EELC'  (Early Events,
+##'     Late Censored) thinks of the Surv  objects as informative of each other,
+##'     e.g. if the first observation in the  first row is censored at 1 for the
+##'     first variable  and at 2 for  the second variable, then  the combination
+##'     will pick the  second one. More specifically, it will  pick the earliest
+##'     event (as an event) if there is at least one event, and it will pick the
+##'     latest censored (as censored) if  there are no events. 'earliest' thinks
+##'     of the Surv objects  as being very distinct, so it  will simply pick the
+##'     earliest time (as event or censored).
+##' @param surv.output  return a Surv object (default \code{TRUE}),  else a data
 ##'     frame with variables \code{time} and \code{event}.
 ##' @export
 surv_combiner <- function(..., comb.type = 'EELC', surv.output = TRUE){

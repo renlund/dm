@@ -4,7 +4,8 @@
 \alias{insert_linebreak}
 \title{add linebreaks}
 \usage{
-insert_linebreak(s, n, linebreak = "\\n", splitby = " ")
+insert_linebreak(s, n, linebreak = "\\n", splitby = " ",
+  max.it = 10000)
 }
 \arguments{
 \item{s}{a character string}
@@ -14,6 +15,8 @@ insert_linebreak(s, n, linebreak = "\\n", splitby = " ")
 \item{linebreak}{defaults to newline \code{"\n"}}
 
 \item{splitby}{defaults to space \code{" "}}
+
+\item{max.it}{maximum number of iteration of a while loop}
 }
 \value{
 character vector
