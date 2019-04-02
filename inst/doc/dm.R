@@ -13,30 +13,30 @@ if(FALSE){ ## create document
 }
 
 ## ----"no-eval-opts", echo = TRUE, eval = FALSE---------------------------
-#  opts_dm$set('default_db' = 'MyDataBase')
+## opts_dm$set('default_db' = 'MyDataBase')
 
 ## ----"no-eval-dm", echo = TRUE, eval = FALSE-----------------------------
-#  dmv(var = 'gEndEr', name = 'gender', label = "Perceived Gender")
-#      ## is followed by information being printed
+## dmv(var = 'gEndEr', name = 'gender', label = "Perceived Gender")
+##     ## is followed by information being printed
 
 ## ----"no-eval-dm2", echo = TRUE, eval = FALSE----------------------------
-#  dmv('gEndEr', 'gender', label = "Biological Gender") ## overwrites
-#      ## the 'gender' entry
+## dmv('gEndEr', 'gender', label = "Biological Gender") ## overwrites
+##     ## the 'gender' entry
 
 ## ----"no-eval-dm3", echo = TRUE, eval = FALSE----------------------------
-#  dm_doc(kill = TRUE, prompt = FALSE) ## or possibly kill only this
-#    ## entry dm:::dm_doc_set('gender', NULL)
+## dm_doc(kill = TRUE, prompt = FALSE) ## or possibly kill only this
+##   ## entry dm:::dm_doc_set('gender', NULL)
 
 ## ----"no-eval-doc", echo = TRUE, eval = FALSE----------------------------
-#  myDoc <- dm_doc()
-#  print(myDoc)  ## N.B not all information is printed
+## myDoc <- dm_doc()
+## print(myDoc)  ## N.B not all information is printed
 
 ## ----"no-eval-create", echo = TRUE, eval = FALSE-------------------------
-#  id_key = c('MyDataBase' = 'id', 'Other1' = 'ID', 'Other2' = 'idno')
-#  CDB <- dm_create(set = MyDataBase$id, id.name = id_key)
+## id_key = c('MyDataBase' = 'id', 'Other1' = 'ID', 'Other2' = 'idno')
+## CDB <- dm_create(set = MyDataBase$id, id.name = id_key)
 
 ## ----"no-eval-tables", echo = TRUE, eval = FALSE-------------------------
-#  lapply(dm_doc(), FUN = function(x) x$recode_table)
+## lapply(dm_doc(), FUN = function(x) x$recode_table)
 
 ## ----"create-data"-------------------------------------------------------
 n <- 200
@@ -105,8 +105,8 @@ db_info(CDB) ## look at what we've created
 dm_doc() ## only prints partial information in the doc
 
 ## ----"variable-overview", eval = FALSE-----------------------------------
-#  pdoc <- print(dm_doc(), print = FALSE)
-#  rtables <- lapply(dm_doc(), FUN = function(x) x$recode_table)
+## pdoc <- print(dm_doc(), print = FALSE)
+## rtables <- lapply(dm_doc(), FUN = function(x) x$recode_table)
 
 ## ----"dm_doc2latex", results = 'asis'------------------------------------
 ## dm_doc2latex(doc = myDoc)

@@ -14,6 +14,9 @@ library(dm)
 set.seed(19790424)
 if(FALSE){ ## create document
     knitr::knit2pdf('dm.rnw')
+    if(FALSE){
+        knitr::purl('dm.rnw')
+    }
 }
 @
 
