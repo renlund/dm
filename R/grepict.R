@@ -71,7 +71,12 @@ grepict_rigid <- function(pattern, x = NULL, data, ..., include = c(TRUE, TRUE),
     if(is.null(data$begin)) data$begin <- min(data$date)
     if(is.null(data$end)) data$end <- max(data$date)
     ## -- keep copy of data, one row per id, for later
-    data.copy <- subset(data, !duplicated(data$id), select = used_data_names)
+    if(TRUE){ ##  try this
+        F.dc <- duplicated(paste0(data$id, data$begin, data$end))
+        data.copy <- subset(data, !F.dc, select = used_data_names)
+    } else { ## old code
+        data.copy <- subset(data, !duplicated(data$id), select = used_data_names)
+    }
     data.copy$date <- as.Date(NA_character_)
     missing_in_nonmatches <- setdiff(output_vars, names(data.copy))
     ## -- derive time variables
@@ -128,24 +133,41 @@ grepict_rigid <- function(pattern, x = NULL, data, ..., include = c(TRUE, TRUE),
                                   ncol = length(output_vars),
                                   dimnames = list(c(), output_vars)))
     } else {
-        S <- R[order(R$id, R$date, R$match.in), output_vars]
+        S <- R[order(R$id, R$begin, R$end, R$date, R$match.in), output_vars]
         n <- nrow(S)
         ## -- create indicators for first instance of each id and first instance
         ## -- of each id + date combination. This code must treat the case of
         ## -- length 1 vectors separately
         if(n > 1){
-            S$first.id <- as.integer(c(TRUE, !(S$id[2:n] == S$id[1:(n-1)])))
-            S$first.id_date <- as.integer(
-                c(TRUE, !(S$id[2:n] == S$id[1:(n-1)] &
-                          S$date[2:n] == S$date[1:(n-1)]))
-                )
+            if(TRUE){ ##  try this
+                F.id = !(S$id[2:n] == S$id[1:(n-1)] &
+                         S$begin[2:n] == S$begin[1:(n-1)] &
+                         S$end[2:n] == S$end[1:(n-1)])
+                F.id.date = !(S$id[2:n] == S$id[1:(n-1)] &
+                              S$begin[2:n] == S$begin[1:(n-1)] &
+                              S$end[2:n] == S$end[1:(n-1)] &
+                              S$date[2:n] == S$date[1:(n-1)])
+            } else { ## old code
+                F.id = !(S$id[2:n] == S$id[1:(n-1)])
+                F.id.date = !(S$id[2:n] == S$id[1:(n-1)] &
+                              S$date[2:n] == S$date[1:(n-1)])
+            }
+            S$first.id <- as.integer(c(TRUE, F.id))
+            S$first.id_date <- as.integer(c(TRUE, F.id.date))
         } else {
             S$first.id <- 1L
             S$first.id_date <- 1L
         }
     }
     ## -- create the object to return
-    ss <- !(data.copy$id %in% S$id)
+    ## XK this needs to be id and start + end (?), since each individual could
+    ## appear more than once with different start and end dates
+    if(TRUE){ ## try this instead
+        ss <- !(paste0(data.copy$id, data.copy$begin, data.copy$end) %in%
+                paste0(S$id, S$begin, S$end))
+    } else{ ## old code
+        ss <- !(data.copy$id %in% S$id)
+    }
     RET <- if(nrow(B <- subset(data.copy, subset = ss)) > 0){
                ## -- create all output variables
                for(K in missing_in_nonmatches){
@@ -209,8 +231,10 @@ grepict_rigid <- function(pattern, x = NULL, data, ..., include = c(TRUE, TRUE),
 ##' @param date name of associated date variable (in 'data')
 ##' @param units a vector of id's, or a data frame containing id's as well as
 ##'     (but optionally) 'begin' and 'end' variables
-##' @param units.id variable name in 'units' to use as id (by default the same is
-##'     'id')
+##' @param units.id variable name in 'units' to use as id (by default the same as
+##'     'id') N.B. a unit can appear several times, and will be identified
+##'     alongside 'begin' and 'end' (a warning will be given if these 3
+##'     variables are not enough for uniqueness)
 ##' @param begin variable name in 'units' to use as begin, if missing will be set
 ##'     to earliest date in data
 ##' @param end variable name in 'units' to use as end, if missing will be set to
@@ -237,8 +261,10 @@ grepict_rigid <- function(pattern, x = NULL, data, ..., include = c(TRUE, TRUE),
 ##'  \item match.in the variable the match was found in
 ##'  \item pattern the pattern searched for
 ##'  \item alias the name of pattern searched for (else p1, p2, etc)
-##'  \item first.id indicator for first occurence of associated id
-##'  \item first.id_date indicator for first occurence of associated id and date
+##'  \item first.id indicator for first occurence of associated
+##'     id/begin/end-combination
+##'  \item first.id_date indicator for first occurence of associated
+##'     id/begin/end- AND date combination
 ##'  \item ... all variables in data that are not id, date or search
 ##'     variables. These will be renamed if they are in conflict with output
 ##'     names. These will only be included in output when \code{long = TRUE}.}
@@ -350,6 +376,12 @@ grepict <- function(pattern, x = NULL, data, id = 'id', date = 'date',
         units <- units[, c(units.id, begin, end)]
         names(units) <- c('id', 'begin', 'end')
     }
+    ## -- NEW warn if id + begin + end is not unique
+    if(any(wdup <- duplicated(paste0(units$id, units$begin, units$end)))){
+        warning("'id', 'begin', and 'end' is not unique:\n")
+        print(units[wdup,])
+        flush.console()
+    }
     ## -- missing date in data will be problematic, throw warning
     na.indx <- is.na(data[[date]])
     if(any(na.indx)){
@@ -407,69 +439,69 @@ grepict <- function(pattern, x = NULL, data, id = 'id', date = 'date',
 
 if(FALSE){
 
-    df <- data.frame(
-        foo = rep(1:5, c(4, 3, 1, 1, 1)),
-        bar = as.Date("2001-01-01") + c(-371,1,1,2, 2,3,371, 0, 372, 4),
-        baz =  c("b","a","a","b", "a","b","b", "a", "b", "b"),
-        quuz = c("a","b","a","b", "b","a","a", "b", "a", "b"),
-        xtra = sprintf("extra%d", 1:10),
-        time = sprintf("date%d", 1:10)
+    data <- data.frame(
+        foo = rep(c(1:5, 7), c(4, 3, 1, 1, 1, 1)),
+        bar = as.Date("2001-01-01") + c(-371,1,1,2, 2,3,371, 0, 372, 4, 230),
+        baz =  c("b","a","a","b", "a","b","b", "a", "b", "b", "a"),
+        quuz = c("a","b","a","b", "b","a","a", "b", "a", "b", NA),
+        xtra = sprintf("extra%d", 1:11),
+        time = sprintf("date%d", 1:11)
     )
-    df <- df[sample(seq_along(df)), ]
+    ## data <- data[sample(seq_along(data)), ]
     Set <- data.frame(
-        ID = c(2:4, 6:7),
-        arrival = as.Date("2000-06-06") + c(0,10,365,366,367),
-        death = c(1,1,1,0,0),
-        death.date = as.Date("2001-06-06") + c(0,100,200,720,720)
+        ID = c(2:4, 6:7, 7, 6),
+        arrival = as.Date("2000-06-06") + c(0,10,365,366,367,0, -365),
+        death = c(1,1,1,0,0,0,0),
+        death.date = as.Date("2001-06-06") + c(0,100,200,720,720,366, -365)
     )
-    Set <- Set[sample(seq_along(Set)), ]
+    ##Set <- Set[sample(seq_along(Set)), ]
 
     ## match all
-    grepict(data = df, pattern = '.', x = c('baz', 'quuz'), id = 'foo',
-               date = 'bar', units = Set, units.id = 'ID', begin = 'arrival',
-               end = 'death.date', long = FALSE, stack = FALSE, verbose = TRUE)
-
-    grepict(data = df, pattern = '.', x = c('baz', 'quuz'), id = 'foo',
+    grepict(data = data, pattern = '.', x = c('baz', 'quuz'), id = 'foo',
                date = 'bar', units = Set, units.id = 'ID', begin = 'arrival',
                end = 'death.date', long = TRUE, stack = TRUE, verbose = TRUE)
 
-    grepict(data = df, pattern = '.', x = c('baz', 'quuz'), id = 'foo',
+    grepict(data = data, pattern = '.', x = c('baz', 'quuz'), id = 'foo',
+               date = 'bar', units = Set, units.id = 'ID', begin = 'arrival',
+               end = 'death.date', long = FALSE, stack = FALSE, verbose = TRUE)
+
+    grepict(data = data, pattern = '.', x = c('baz', 'quuz'), id = 'foo',
                date = 'bar', units = Set, units.id = 'ID', begin = 'arrival',
                end = 'death.date', long = FALSE, stack = TRUE, verbose = TRUE)
 
     ## match all, twice
-    grepict(data = df, pattern = c('.', '.*'),
+    grepict(data = data, pattern = c('.', '.*'),
                x = c('baz', 'quuz'), id = 'foo',
                date = 'bar', units = Set, units.id = 'ID', begin = 'arrival',
                end = 'death.date', long = FALSE, stack = FALSE, verbose = TRUE)
 
-    grepict(data = df, pattern = c('.', '.*'),
+    grepict(data = data, pattern = c('.', '.*'),
                x = c('baz', 'quuz'), id = 'foo',
                date = 'bar', units = Set, units.id = 'ID', begin = 'arrival',
                end = 'death.date', long = TRUE, stack = TRUE, verbose = TRUE)
 
-    grepict(data = df, pattern = c('.', '.*'),
+    grepict(data = data, pattern = c('.', '.*'),
                x = c('baz', 'quuz'), id = 'foo',
                date = 'bar', units = Set, units.id = 'ID', begin = 'arrival',
                end = 'death.date', long = FALSE, stack = TRUE, verbose = TRUE)
 
     ## match some
-    grepict(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
+    grepict(data = data, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
                x = c('baz', 'quuz'), id = 'foo',
                date = 'bar', units = Set, units.id = 'ID', begin = 'arrival',
                end = 'death.date', long = FALSE, stack = FALSE, verbose = TRUE)
 
-    grepict(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
+    grepict(data = data, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
                x = c('baz', 'quuz'), id = 'foo',
                date = 'bar', units = Set, units.id = 'ID', begin = 'arrival',
                end = 'death.date', long = TRUE, stack = TRUE, verbose = TRUE)
 
-    grepict(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
+    grepict(data = data, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
                x = c('baz', 'quuz'), id = 'foo',
                date = 'bar', units = Set, units.id = 'ID', begin = 'arrival',
                end = 'death.date', long = FALSE, stack = TRUE, verbose = TRUE)
 
-    ## data = df
+    ## data = data
     ## pattern = setNames(c('a', 'b'), c("Foo", "Bar"))
     ## x = c('baz', 'quuz')
     ## id = 'foo'
@@ -483,55 +515,55 @@ if(FALSE){
     ## verbose = TRUE
 
     ## use set dates
-    grepict(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
+    grepict(data = data, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
                x = c('baz', 'quuz'), id = 'foo',
                date = 'bar', units = Set, units.id = 'ID',
                begin = as.Date('2000-01-01'), end = as.Date('2001-12-31'),
                long = FALSE, stack = FALSE, verbose = FALSE)
 
-    grepict(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
+    grepict(data = data, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
                x = c('baz', 'quuz'), id = 'foo',
                date = 'bar', units = Set, units.id = 'ID',
                begin = as.Date('2000-01-01'), end = as.Date('2001-12-31'),
                long = TRUE, stack = TRUE, verbose = FALSE)
 
-    grepict(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
+    grepict(data = data, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
                x = c('baz', 'quuz'), id = 'foo',
                date = 'bar', units = Set, units.id = 'ID',
                begin = as.Date('2000-01-01'), end = as.Date('2001-12-31'),
                long = FALSE, stack = TRUE, verbose = FALSE)
 
     ## use set dates, vector of id's
-    grepict(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
+    grepict(data = data, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
                x = c('baz', 'quuz'), id = 'foo', date = 'bar',
                units = Set$ID, begin = as.Date('2000-01-01'),
                end = as.Date('2001-12-31'), verbose = FALSE)
 
     ## vector of id's
-    grepict(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
+    grepict(data = data, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
                x = c('baz', 'quuz'), id = 'foo', date = 'bar',
                units = Set$ID, verbose = FALSE)
 
     ## vector of id's
-    grepict(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
+    grepict(data = data, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
                x = c('baz', 'quuz'), id = 'foo', date = 'bar',
                units = Set$ID, verbose = FALSE)
 
     ## 'incomplete' units
-    grepict(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
+    grepict(data = data, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
                x = c('baz', 'quuz'), id = 'foo', date = 'bar',
                units = Set[, c('ID', 'arrival')], units.id = 'ID',
                begin = 'arrival', end = 'death.date', verbose = FALSE)
 
     ## 'incomplete' units
-    grepict(data = df, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
+    grepict(data = data, pattern = setNames(c('a', 'b'), c("Foo", "Bar")),
                x = c('baz', 'quuz'), id = 'foo', date = 'bar',
                units = Set[, c('ID', 'death.date')], units.id = 'ID',
                begin = 'arrival', end = 'death.date', verbose = FALSE)
 
     ## -----------------------------------------------------------------
 
-    df <- data.frame(
+    data <- data.frame(
         id = rep(1:5, c(4, 3, 1, 1, 1)),
         date = as.Date("2001-01-01") + c(-371,1,1,2, 2,3,371, 0, 372, 4),
         baz =  c("b","a","a","b", "a","b","b", "a", "b", "b"),
@@ -539,50 +571,52 @@ if(FALSE){
         xtra = sprintf("extra%d", 1:10),
         time = sprintf("date%d", 1:10)
     )
-    df <- df[sample(seq_along(nrow(df))), ]
+    data <- data[sample(seq_along(nrow(data))), ]
 
     ## all matches
-    grepict_rigid(data = df, pattern = '.', x = c('baz', 'quuz'),
+    grepict_rigid(data = data, pattern = '.', x = c('baz', 'quuz'),
                       long = TRUE, verbose = TRUE)
-    grepict_rigid(data = df, pattern = '.', x = c('baz', 'quuz'),
+    grepict_rigid(data = data, pattern = 'a', x = c('baz', 'quuz'),
+                      long = TRUE, verbose = TRUE)
+    grepict_rigid(data = data, pattern = '.', x = c('baz', 'quuz'),
                      long = FALSE, verbose = TRUE)
-    grepict_rigid(data = df, pattern = setNames('.', "ALL"), x = c('baz', 'quuz'),
+    grepict_rigid(data = data, pattern = setNames('.', "ALL"), x = c('baz', 'quuz'),
                       long = FALSE, verbose = TRUE)
-    grepict_rigid(data = df, pattern = setNames('.', "ALL"), x = c('baz', 'quuz'),
+    grepict_rigid(data = data, pattern = setNames('.', "ALL"), x = c('baz', 'quuz'),
                       long = FALSE, verbose = TRUE, paste.alias = FALSE)
 
     ## non matches
-    grepict_rigid(data = df, pattern = 'q', x = c('baz', 'quuz'),
+    grepict_rigid(data = data, pattern = 'q', x = c('baz', 'quuz'),
                       long = TRUE, verbose = TRUE)
-    grepict_rigid(data = df, pattern = 'q', x = c('baz', 'quuz'),
+    grepict_rigid(data = data, pattern = 'q', x = c('baz', 'quuz'),
                       long = FALSE, verbose = TRUE)
-    grepict_rigid(data = df, pattern = setNames('q', "NONE"), x = c('baz', 'quuz'),
+    grepict_rigid(data = data, pattern = setNames('q', "NONE"), x = c('baz', 'quuz'),
                      long = FALSE, verbose = TRUE)
-    grepict_rigid(data = df, pattern = setNames('q', "NONE"), x = c('baz', 'quuz'),
+    grepict_rigid(data = data, pattern = setNames('q', "NONE"), x = c('baz', 'quuz'),
                       long = FALSE, verbose = TRUE, paste.alias = FALSE)
 
     ## some matches
-    grepict_rigid(data = df, pattern = 'a', x = c('baz'),
+    grepict_rigid(data = data, pattern = 'a', x = c('baz'),
                       long = TRUE, verbose = TRUE)
-    grepict_rigid(data = df, pattern = 'a', x = c('baz'),
+    grepict_rigid(data = data, pattern = 'a', x = c('baz'),
                       long = FALSE, verbose = TRUE)
-    grepict_rigid(data = df, pattern = setNames('a', "TheA"), x = c('baz'),
+    grepict_rigid(data = data, pattern = setNames('a', "TheA"), x = c('baz'),
                       long = FALSE, verbose = TRUE)
 
     ## wrong case, but ignored
-    grepict_rigid(data = df, pattern = 'A', x = c('baz'),
+    grepict_rigid(data = data, pattern = 'A', x = c('baz'),
                       long = TRUE, ignore.case = TRUE, verbose = TRUE)
-    grepict_rigid(data = df, pattern = 'A', x = c('baz'),
+    grepict_rigid(data = data, pattern = 'A', x = c('baz'),
                       long = FALSE, ignore.case = TRUE, verbose = TRUE)
-    grepict_rigid(data = df, pattern = setNames('A', "TheA"), x = c('baz'),
+    grepict_rigid(data = data, pattern = setNames('A', "TheA"), x = c('baz'),
                       long = FALSE, ignore.case = TRUE, verbose = TRUE)
 
     ## test
-    grepict_rigid(data = df, pattern = '1', x = c('time'),
+    grepict_rigid(data = data, pattern = '1', x = c('time'),
                       long = TRUE, verbose = TRUE)
-    grepict_rigid(data = df, pattern = 'x', x = c('time'),
+    grepict_rigid(data = data, pattern = 'x', x = c('time'),
                       long = FALSE, verbose = TRUE)
-    grepict_rigid(data = df, pattern = setNames('x', "dieX"), x = c('time'),
+    grepict_rigid(data = data, pattern = setNames('x', "dieX"), x = c('time'),
                      long = FALSE, verbose = TRUE)
 
     ##

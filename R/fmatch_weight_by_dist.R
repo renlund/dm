@@ -64,6 +64,7 @@ fmatch_weight_by_dist <- function(tr, data, cl = "cl", dist = "dist", id = "id",
               }
         a <- quantile(TEST$dist, mp$l, na.rm = TRUE)
         b <- quantile(TEST$dist, mp$h, na.rm = TRUE)
+        if(b == a) stop("strange weight distribution!")
         TEST$tmp <- ifelse(TEST$dist <= a, a, ifelse(TEST$dist >= b, b, TEST$dist))
         TEST$iw <- ( mp$S * b - a - (mp$S - 1)*TEST$tmp ) / (b - a)
         foo <- function(X){
@@ -85,13 +86,15 @@ fmatch_weight_by_dist <- function(tr, data, cl = "cl", dist = "dist", id = "id",
                    all.x = TRUE, by = "id")
         R
     } else {
-        message("no method by 'test' is implemented")
+        message("no method but 'test' is implemented")
         invisible(as.data.frame(NULL))
     }
 }
 
 if(FALSE){
     library(dplyr)
+    library(tidyr)
+    library(ggplot2)
     library(optmatch)
     library(descripteur)
     library(dm)
@@ -111,6 +114,17 @@ if(FALSE){
             gr == 1 ~ sample(c("M", "F"), n, TRUE, prob = c(3,1)),
             TRUE ~ sample(c("M", "F"), n, TRUE, prob = c(2,1))
         ),
+        biomX = case_when(
+            gr == 0 ~ round(rexp(n, 1/50), 1),
+            TRUE ~ round(rexp(n, 1/95), 1)
+        ),
+        biomY = round(case_when(
+            gender == "M" ~ runif(n, 30, 90) + rexp(n, 1/25),
+            TRUE  ~ runif(n, 35, 90)
+        ) + case_when(
+                gr == 1 ~ rnorm(n, 5, 0),
+                TRUE ~ 0
+            ), 1),
         weight = round(case_when(
             gender == "M" ~ runif(n, 60, 90) + rexp(n, 1/5),
             TRUE  ~ runif(n, 60, 90) + rexp(n, 1/5)
@@ -123,11 +137,29 @@ if(FALSE){
             TRUE ~ sample(c(0,1), n, TRUE, prob = c(1,1))
         )
     )
+    dtables(df, glist = "grChr") %>%
+        dtable_prune(rm = c("variable", "info"))
 
-    mo <- match_on(gr ~ age + weight + gender + preSjuk, data = df, method=  "mahalanobis")
+    model <- glm(gr ~ age + biomX + biomY + weight + gender + preSjuk,
+        family = "binomial", data = df)
+    df$ps <- predict(model, type = "response", newdata = df)
+
+    ## mahalanobis matching
+    mo <- match_on(gr ~ age + biomX + biomY + weight + gender + preSjuk,
+                   data = df, method=  "mahalanobis")
     fm <- fullmatch(mo, data = df)
-    df2 <- optmatch_distances(fm, mo, df)
+    tmp <- optmatch_distances(fm, mo, df)
 
+    ## ps matching
+    mo2 <- match_on(gr ~ ps, data = df, method = "euclidean")
+    fm2 <- fullmatch(mo2, data = df)
+    tmp2 <- optmatch_distances(fm2, mo2, df) %>%
+        transmute(id, cl2 = cl, dist2 = dist)
+
+    ## join
+    df2 <- left_join(tmp, tmp2)
+
+    ## get weights
     df3 <- match_weight(tr = "gr", cl = "cl", id = "id", data = df2) %>%
         select(id, att.weight)
 
@@ -138,21 +170,65 @@ if(FALSE){
                                   method.params = list(l = 0.01, h = 0.99, S = 10)) %>%
         select(id, d.weight2 = w)
 
-    D <- df %>% left_join(df3) %>% left_join(df4) %>% left_join(df5)
+    df6 <- match_weight(tr = "gr", cl = "cl2", id = "id", data = df2) %>%
+        select(id, ps.weight = att.weight)
+
+    df7 <- fmatch_weight_by_dist(tr = "gr", data = df2, cl = "cl2", dist = "dist2",
+                                  method.params = list(l = 0.01, h = 0.99, S = 10)) %>%
+        select(id, ps.weight2 = w)
+
+
+    D <- df %>% left_join(df3) %>% left_join(df4) %>% left_join(df5) %>%
+        left_join(df6) %>% left_join(df7)
 
     g <- dtable_guide(D, unit.id = "id", elim.set = c("gr", "d.weight", "att.weight"))
 
-    dtables(D, guide = g, glist = "grChr") %>%
-        dtable_prune(rm = c("variable", "info"))
+    (d2 <- dtables(D, guide = g, glist = "grChr") %>%
+        dtable_prune(rm = c("variable", "info")))
 
-    dtables(D, guide = g, glist = "grChr", w = "att.weight") %>%
-        dtable_prune(rm = c("variable", "info"))
+    (d3 <- dtables(D, guide = g, glist = "grChr", w = "att.weight") %>%
+        dtable_prune(rm = c("variable", "info")))
 
-    dtables(D, guide = g, glist = "grChr", w = "d.weight") %>%
-        dtable_prune(rm = c("variable", "info"))
+    (d4 <- dtables(D, guide = g, glist = "grChr", w = "d.weight") %>%
+        dtable_prune(rm = c("variable", "info")))
 
-    dtables(D, guide = g, glist = "grChr", w = "d.weight2") %>%
-        dtable_prune(rm = c("variable", "info"))
+    (d5 <- dtables(D, guide = g, glist = "grChr", w = "d.weight2") %>%
+        dtable_prune(rm = c("variable", "info")))
 
+    (d6 <- dtables(D, guide = g, glist = "grChr", w = "ps.weight") %>%
+         dtable_prune(rm = c("variable", "info")))
+
+    (d7 <- dtables(D, guide = g, glist = "grChr", w = "ps.weight2") %>%
+         dtable_prune(rm = c("variable", "info")))
+
+
+    foo <- function(d, s){
+        D <- d %>% as.data.frame() %>%
+            subset(Variables %in% c('age', 'biomX', 'biomY', 'weight',
+                                    'gender: M', 'preSjuk: 1'),
+                   select = c("Variables", "Std"))
+        names(D)[2] <- s
+        D
+    }
+
+    (DD <- foo(d2, "baseline") %>%
+         left_join(foo(d3, "att")) %>%
+         left_join(foo(d4, "test1")) %>%
+         left_join(foo(d5, "test2")) %>%
+         left_join(foo(d6, "ps")) %>%
+         left_join(foo(d7, "ps2")))
+
+    lev = DD %>% arrange(baseline) %>% pull(Variables)
+    DD2 <- gather(DD, key = "type", value = "std", -Variables) %>%
+        mutate(Variables = factor(Variables, levels = lev))
+
+
+    theme_set(theme_bw())
+    ggplot(DD2, aes(Variables, std, color = type, shape = type)) +
+        geom_point(size = 4, alpha = 1/2) +
+        coord_flip()
+
+
+    DD2 %>% group_by(type) %>% summarise(m = mean(std)) %>% arrange(m)
 
 }

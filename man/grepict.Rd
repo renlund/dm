@@ -25,8 +25,10 @@ missing all variables except id and date are chosen}
 \item{units}{a vector of id's, or a data frame containing id's as well as
 (but optionally) 'begin' and 'end' variables}
 
-\item{units.id}{variable name in 'units' to use as id (by default the same is
-'id')}
+\item{units.id}{variable name in 'units' to use as id (by default the same as
+'id') N.B. a unit can appear several times, and will be identified
+alongside 'begin' and 'end' (a warning will be given if these 3
+variables are not enough for uniqueness)}
 
 \item{begin}{variable name in 'units' to use as begin, if missing will be set
 to earliest date in data}
@@ -62,8 +64,10 @@ The basic 'long' output is a data frame with
  \item match.in the variable the match was found in
  \item pattern the pattern searched for
  \item alias the name of pattern searched for (else p1, p2, etc)
- \item first.id indicator for first occurence of associated id
- \item first.id_date indicator for first occurence of associated id and date
+ \item first.id indicator for first occurence of associated
+    id/begin/end-combination
+ \item first.id_date indicator for first occurence of associated
+    id/begin/end- AND date combination
  \item ... all variables in data that are not id, date or search
     variables. These will be renamed if they are in conflict with output
     names. These will only be included in output when \code{long = TRUE}.}
