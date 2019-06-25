@@ -167,12 +167,24 @@ at_risk <- function(x, tp = NULL, tidy = FALSE){
         for(S in LS){ ## S = LS[1]
             for(G in LG){ ## G = LG[1]
                 for(t in tp){ ## t = tp[2]
-                    sel1 <- x$outcome == O & x$strata == S &
+                    sel1 <- x$outcome == O &
+                        x$strata == S &
                         x$group == G
-                    sel2 <- x$time <= t
-                    d <- subset(x, sel1 & sel2)
-                    r <- if(any(sel1 & sel2)) min(d$n.risk) else max(x$n.risk[sel1])
-                    e <- if(any(sel1 & sel2)) sum(d$n.event) else 0
+                    sel2A <- x$time <= t
+                    sel2B <- x$time >= t
+                    dA <- subset(x, sel1 & sel2A)
+                    dB <- subset(x, sel1 & sel2B)
+                    ## r <- if(any(sel1 & sel2A)){
+                    ##          min(dA$n.risk)
+                    ##      } else{
+                    ##          max(x$n.risk[sel1])
+                    ##      }
+                    r <- if(any(sel1 & sel2B)){
+                             max(dB$n.risk)
+                         } else{
+                             0 ## min(x$n.risk[sel1])
+                         }
+                    e <- if(any(sel1 & sel2A)) sum(dA$n.event) else 0
                     tmp <- data.frame(
                         outcome = O,
                         strata = S,
