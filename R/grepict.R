@@ -649,5 +649,21 @@ if(FALSE){
     fooz(pattern = "a", x = c(letters, LETTERS), ignore.case = TRUE)
     grepl("a", c(letters, LETTERS), ignore.case = TRUE)
 
+    data <- data.frame(
+        id = "id1",
+        code = letters[c(1, 1, 1, 1, 2, 1, 1)],
+        when = as.Date("2013-01-01") + c(0, 400, 401, 401, 750, 1200, 10000)
+    )
+
+    u <- data.frame(
+        id = "id1",
+        a = as.Date("2014-01-01") + (0:2)*365,
+        b = as.Date("2015-01-01") + (0:2)*365
+    )
+
+    (g <- grepict(pattern = c("theA" = "a"), x = "code", data = data,
+            date = "when", id = "id", units = u, begin = "a", end = "b"))
+
+    g[g$first.id == 1, ]
 
 }
