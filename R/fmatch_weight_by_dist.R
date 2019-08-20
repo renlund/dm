@@ -92,12 +92,12 @@ fmatch_weight_by_dist <- function(tr, data, cl = "cl", dist = "dist", id = "id",
 }
 
 if(FALSE){
-    library(dplyr)
-    library(tidyr)
-    library(ggplot2)
-    library(optmatch)
-    library(descripteur)
-    library(dm)
+    ## library(dplyr)
+    ## library(tidyr)
+    ## library(ggplot2)
+    ## library(optmatch)
+    ## library(descripteur)
+    ## library(dm)
 
     nt <- 1000
     nc <- 5*nt
