@@ -380,7 +380,7 @@ grepict <- function(pattern, x = NULL, data, id = 'id', date = 'date',
     if(any(wdup <- duplicated(paste0(units$id, units$begin, units$end)))){
         warning("'id', 'begin', and 'end' is not unique:\n")
         print(units[wdup,])
-        flush.console()
+        utils::flush.console()
     }
     ## -- missing date in data will be problematic, throw warning
     na.indx <- is.na(data[[date]])

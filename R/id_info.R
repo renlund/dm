@@ -5,7 +5,7 @@
 ##' @export
 id_info <- function(id){
     m <- sum(is.na(id))
-    n <- length(na.omit(unique(id)))
+    n <- length(stats::na.omit(unique(id)))
     N <- length(id)
     p1 <- 100*n/N
     p1t <- if(p1 < 0.1){

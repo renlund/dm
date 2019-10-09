@@ -12,8 +12,7 @@ Suggests:
     Hmisc,
     survival,
     knitr,
-    testthat,
-    optmatch
+    testthat
 RoxygenNote: 6.1.1
 Encoding: UTF-8
 LazyData: true

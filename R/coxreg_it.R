@@ -42,7 +42,7 @@ cph_it <- function(data, surv, fRHS, cont = NULL, w = NULL,
     for(i in seq_along(surv)){ ## i = 1
         utf <- surv[i]
         ## calculate model
-        mod <- rms::cph(formula(paste0(utf, " ~ ", fRHS)), data = data,
+        mod <- rms::cph(stats::formula(paste0(utf, " ~ ", fRHS)), data = data,
                         x = TRUE, y = TRUE, weights = w)
         M[[utf]] <- mod
         ## get model coefficients
@@ -96,10 +96,14 @@ if(FALSE){
 ##' convert a \code{rms::cph} object to a data frame
 ##' @param cph an object created by \code{rms::cph}
 ##' @return a data.frame
+##' @importFrom stats anova
 ##' @export
 cph2df <- function(cph){
-    s <- rms:::summary.rms(cph)
-    a <- rms:::anova.rms(cph)
+    if(!any(grepl("package:rms", search()))){
+        message("might want to 'library(rms)' at this point\n")
+    }
+    s <- summary(cph)
+    a <- anova(cph)
     adf <- as.data.frame(a)
     adf$term <- rownames(adf)
     rownames(adf) <- NULL
