@@ -2,10 +2,13 @@
 % Please edit documentation in R/coxreg_it.R
 \name{cph_it}
 \alias{cph_it}
+\alias{cph_it_display_code}
 \title{iterated use of \code{rms::cph}}
 \usage{
 cph_it(data, surv, fRHS, cont = NULL, w = NULL, prefix = c(time =
   "t.", event = "ev."))
+
+cph_it_display_code()
 }
 \arguments{
 \item{data}{a data frame}
@@ -37,3 +40,9 @@ a list with components
 run the same (RHS) formula for multiple outcomes and record models, effect,
     residuals and continuous effects
 }
+\section{Functions}{
+\itemize{
+\item \code{cph_it_display_code}: example  of code to loop out results  into a rnw document
+(requires subdirectory 'saved-figure' but this is easily modified)
+}}
+

@@ -116,3 +116,98 @@ cph2df <- function(cph){
     r0 <- cbind(data.frame(term = dn1[!hri]), sdf)
     r <- merge(r0, adf, all.x = TRUE, by = "term")
 }
+
+##' @describeIn cph_it example  of code to loop out results  into a rnw document
+##'     (requires subdirectory 'saved-figure' but this is easily modified)
+##' @export
+cph_it_display_code <- function(){
+cat("
+           ###############################
+           ##   COPY-PASTE and MODIFY   ##
+           ###############################
+
+CI ## <- object created by coxreg_it
+pref ## <- prefix to distinguish filenames and labels
+
+## helper functions
+gtxt <- function(file, caption, label){
+    paste0(\"\n\\begin{center}\\begin{figure}[htb]\n\",
+           \"\\includegraphics{\", file, \"}\n\",
+           \"\\caption{\", caption, \"}\n\",
+           \"\\label{fig:\", label, \"}\n\",
+           \"\\end{figure}\\end{center}\n\")
+}
+zph2df <- function(z, long = TRUE){
+    n <- dim(z$y)[2]
+    r <- cbind(data.frame(x = z$x), as.data.frame(z$y))
+    if(long){
+        reshape(r,
+                varying = 2:(n+1),
+                v.names = \"Residual\",
+                timevar = \"Variable\",
+                times = names(r)[2:(n+1)],
+                direction = \"long\")
+    } else {
+        r
+    }
+}
+## preliminaries
+outcSet <- names(CI$model)
+eff <- CI$effect
+term <- unique(eff$term)
+## loop for results
+cat(\"\n\\clearpage\n\")
+for(i in seq_along(outcSet)){
+    outc <- outcSet[i]
+    cat(\"\n\\subsection{Outcome \", outc, \"}\n\")
+    ## summary of model  -----------------------------------------------
+    s <- summary(CI$model[[outc]])
+    Hmisc::latex(s, file = \"\", where = \"htb\",
+                 label = paste0(\"tab:\", pref, \"-sum-\", outc))
+    ## plot of covariate HR  -------------------------------------------
+    hr <- subset(CI$HR, outcome == outc)
+    p <- ggplot(hr, aes(y = term, x = HR, xmin = conf.low, xmax = conf.high)) +
+        geom_vline(xintercept = 1, lty = 2) +
+        geom_errorbarh() +
+        labs(y = NULL, x = \"Hazard Ratio\") +
+        geom_point()
+    fn <- paste0(\"saved-figure/\", pref, \"-HR-\", outc, \".pdf\")
+    lab <- paste0(\"fig:\", pref, \"-HR-\", outc)
+    cap <- paste0(\"HR in analysis on outcome \", outc, \".\")
+    ggsave(plot = p, filename = fn)
+    cat(gtxt(file = fn, caption = cap, label = lab))
+    ## continuous effects plot -----------------------------------------
+    EFF <- NULL
+    for(j in seq_along(term)){
+        t <- term[j]
+        d <- subset(eff, term == t & outcome == outc,
+                    select = c(t, \"term\", \"HR\", \"conf.low\", \"conf.high\"))
+        names(d)[1] <- \"variable\"
+        EFF <- if(is.null(EFF)) d else rbind(EFF, d)
+    }
+    p <- ggplot(EFF, aes(variable, HR, ymax = conf.high, ymin = conf.low)) +
+        geom_ribbon(alpha = 1/2) +
+        geom_line(size = 1) +
+        labs(x = \"Covariate value\", y = \"Log relative scale\") +
+        facet_wrap( ~ term, scales = \"free\")
+    fn <- paste0(\"saved-figure/\", pref, \"-eff-\", outc, \".pdf\")
+    lab <- paste0(\"fig:\", pref, \"-eff-\", outc)
+    cap <- paste0(\"Relative effects of numeric variables on outcome \", outc, \".\")
+    ggsave(plot = p, filename = fn)
+    cat(gtxt(file = fn, caption = cap, label = lab))
+    ## residual plot ----------------------------------------------------
+    res <- CI$resid[[outc]]
+    z <- zph2df(res)
+    p <- ggplot(z, aes(x, Residual)) +
+        geom_point(alpha = 1/10) +
+        geom_smooth(color = \"red\", method = \"gam\") +
+        facet_wrap( ~ Variable, scales = \"free\")
+    fn <- paste0(\"saved-figure/\", pref, \"-res-\", outc, \".png\")
+    lab <- paste0(\"fig:\", pref, \"-res-\", outc)
+    cap <- paste0(\"Schoenfeld residuals for outcome \", outc, \".\")
+    ggsave(plot = p, filename = fn, height = 9, dpi = 6*72)
+    cat(gtxt(file = fn, caption = cap, label = lab))
+    cat(\"\n\\clearpage\n\")
+}
+")
+}
