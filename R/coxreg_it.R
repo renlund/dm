@@ -114,7 +114,7 @@ cph2df <- function(cph){
     names(sdf) <- c("low", "high", "HR", "conf.low", "conf.high")
     rownames(sdf) <- NULL
     r0 <- cbind(data.frame(term = dn1[!hri]), sdf)
-    r <- merge(r0, adf, all.x = TRUE, by = "term")
+    merge(r0, adf, all.x = TRUE, by = "term")
 }
 
 ##' @describeIn cph_it example  of code to loop out results  into a rnw document
