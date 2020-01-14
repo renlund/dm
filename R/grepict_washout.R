@@ -19,10 +19,12 @@ grepict_washout <- function(g, w = NULL, u = "days"){
     g3 <- subset(g, (g$time <= w & g$event == 1) &
                     !(g$id %in% g1$id) &
                     g$first.id == 1)
-    g3$event = 0
-    g3$time = as.numeric(difftime(g3$end, g3$begin, units = u))
-    g3$date <- g3$end
-    g3$match <- g3$match.in <- NA
+    if(nrow(g3) > 0){
+        g3$event = 0
+        g3$time = as.numeric(difftime(g3$end, g3$begin, units = u))
+        g3$date <- g3$end
+        g3$match <- g3$match.in <- NA
+    }
     ## now fix the g1:ers that need fixin
     g1a <- subset(g1, !(g1$id %in% g2$id)) ## no fix necessary
     g1b <- subset(g1, (g1$id %in% g2$id)) ## fix necessary
@@ -71,5 +73,24 @@ if(FALSE){
     ## ## equal?
     ## summary(test$time[test$event == 1 & test$time > 27])
     ## summary(X$time[X$event == 1 & X$time > 27])
+
+    ## df <- data.frame(
+    ##     rid = 1:13,
+    ##     id = sprintf("id%s", 1:8)[c(1,2,2,3,4,4,5,5,6,6,6,7,8)],
+    ##     begin = as.Date("2000-01-01"),
+    ##     end = as.Date("2000-12-31"),
+    ##     time = c(1,2,3,11,12,13,4,14,5,6,15,7,16),
+    ##     event = rep(1:0, c(11,2)),
+    ##     match.in = NA,
+    ##     match = NA,
+    ##     stringsAsFactors = FALSE
+    ## )
+    ## df$first.id <- as.numeric(!duplicated(df$id))
+    ## df$date <- df$begin + df$time
+    ## ## df[order(df$id), ]
+    ## df
+    ## (gw <- grepict_washout(g = df, w = 10))
+    ## gw[order(gw$id), ]
+    ## subset(df, !rid %in% gw$rid)
 
 }
