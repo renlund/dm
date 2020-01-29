@@ -89,21 +89,35 @@ survfit_it <- function(surv, data,
                                paste0(strata_lev[j], "(", j, "/", length(strata_lev), "), ",
                                       paste0(surv[k], "(", k, "/", length(surv), ")\n"))))
                 }
-                s <- survival::survfit(stats::formula(paste0(surv[k], " ~ 1")),
-                             data = X,
-                             weight = W,
-                             type = type)
-                tmp <- data.frame(
-                    'time' = s$time,
-                    'estimate' = s$surv,
-                    'ci.low' = s$lower,
-                    'ci.high' = s$upper,
-                    'n.risk' = s$n.risk,
-                    'n.event' = s$n.event,
-                    'n.censor' = s$n.censor,
-                    'std.error' = s$std.err,
-                    stringsAsFactors = FALSE
-                )
+                if(nrow(X) > 0){
+                    s <- survival::survfit(stats::formula(paste0(surv[k], " ~ 1")),
+                                           data = X,
+                                           weight = W,
+                                           type = type)
+                    tmp <- data.frame(
+                        'time' = s$time,
+                        'estimate' = s$surv,
+                        'ci.low' = s$lower,
+                        'ci.high' = s$upper,
+                        'n.risk' = s$n.risk,
+                        'n.event' = s$n.event,
+                        'n.censor' = s$n.censor,
+                        'std.error' = s$std.err,
+                        stringsAsFactors = FALSE
+                    )
+                } else {
+                    tmp <- data.frame(
+                        'time' = NA,
+                        'estimate' = NA,
+                        'ci.low' = NA,
+                        'ci.high' = NA,
+                        'n.risk' = NA,
+                        'n.event' = NA,
+                        'n.censor' = NA,
+                        'std.error' = NA,
+                        stringsAsFactors = FALSE
+                    )
+                }
                 tmp$outcome <- surv[k]
                 tmp$strata <- strata_lev[j]
                 tmp$group <- names(glist)[i]
