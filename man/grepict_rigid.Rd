@@ -4,8 +4,16 @@
 \alias{grepict_rigid}
 \title{helper for grepict}
 \usage{
-grepict_rigid(pattern, x = NULL, data, ..., include = c(TRUE, TRUE),
-  long = TRUE, verbose = TRUE, paste.alias = TRUE)
+grepict_rigid(
+  pattern,
+  x = NULL,
+  data,
+  ...,
+  include = c(TRUE, TRUE),
+  long = TRUE,
+  verbose = TRUE,
+  paste.alias = TRUE
+)
 }
 \arguments{
 \item{pattern}{a search string to pass to \code{grepl}}

@@ -4,8 +4,14 @@
 \alias{cdate}
 \title{fix censored dates}
 \usage{
-cdate(x, sep = NULL, low.bound = NULL, verbose = TRUE,
-  bound4all = FALSE, ignore.na = TRUE)
+cdate(
+  x,
+  sep = NULL,
+  low.bound = NULL,
+  verbose = TRUE,
+  bound4all = FALSE,
+  ignore.na = TRUE
+)
 }
 \arguments{
 \item{x}{dates, possibly censored, as character or numeric (e.g. 20070101)}

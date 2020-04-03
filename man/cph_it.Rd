@@ -5,8 +5,14 @@
 \alias{cph_it_display_code}
 \title{iterated use of \code{rms::cph}}
 \usage{
-cph_it(data, surv, fRHS, cont = NULL, w = NULL, prefix = c(time =
-  "t.", event = "ev."))
+cph_it(
+  data,
+  surv,
+  fRHS,
+  cont = NULL,
+  w = NULL,
+  prefix = c(time = "t.", event = "ev.")
+)
 
 cph_it_display_code()
 }

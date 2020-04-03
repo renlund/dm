@@ -5,11 +5,29 @@
 \alias{dmv}
 \title{Data Management Tool (interactive-ish)}
 \usage{
-dm(var, name = var, db = NULL, recode = NULL, transf = NULL,
-  group = NULL, comment = NULL, label = NULL, keep.label = TRUE)
+dm(
+  var,
+  name = var,
+  db = NULL,
+  recode = NULL,
+  transf = NULL,
+  group = NULL,
+  comment = NULL,
+  label = NULL,
+  keep.label = TRUE
+)
 
-dmv(var, name = var, db = NULL, recode = NULL, transf = NULL,
-  group = NULL, comment = NULL, label = NULL, keep.label = TRUE)
+dmv(
+  var,
+  name = var,
+  db = NULL,
+  recode = NULL,
+  transf = NULL,
+  group = NULL,
+  comment = NULL,
+  label = NULL,
+  keep.label = TRUE
+)
 }
 \arguments{
 \item{var}{character, database/data frame entry}

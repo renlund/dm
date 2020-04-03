@@ -4,8 +4,14 @@
 \alias{dm_recode2latex}
 \title{Turn all recoded tables in doc into latex}
 \usage{
-dm_recode2latex(doc = NULL, file = "", lab.prefix = "tab:recode_",
-  where = "htb", clearpage = NULL, ...)
+dm_recode2latex(
+  doc = NULL,
+  file = "",
+  lab.prefix = "tab:recode_",
+  where = "htb",
+  clearpage = NULL,
+  ...
+)
 }
 \arguments{
 \item{doc}{the dm documentation (if \code{NULL} we look in \code{dm_doc()})}

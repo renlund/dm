@@ -2,10 +2,12 @@
 % Please edit documentation in R/insert_newline.R
 \name{insert_linebreak}
 \alias{insert_linebreak}
+\alias{factor_il}
 \title{add linebreaks}
 \usage{
-insert_linebreak(s, n, linebreak = "\\n", splitby = " ",
-  max.it = 10000)
+insert_linebreak(s, n, linebreak = "\\n", splitby = " ", max.it = 10000)
+
+factor_il(x, ...)
 }
 \arguments{
 \item{s}{a character string}
@@ -17,6 +19,10 @@ insert_linebreak(s, n, linebreak = "\\n", splitby = " ",
 \item{splitby}{defaults to space \code{" "}}
 
 \item{max.it}{maximum number of iteration of a while loop}
+
+\item{x}{something interpretable as factor}
+
+\item{...}{passed to \code{insert_linebreak}}
 }
 \value{
 character vector
@@ -28,6 +34,11 @@ insert linebreaks to a character vector
 Given a maximum number of character 'n', insert a linebreak before this number
     is reached. N.B. Words longer than 'n' will however NOT be abbreviated.
 }
+\section{Functions}{
+\itemize{
+\item \code{factor_il}: insert linebreak in factor
+}}
+
 \examples{
     s <- paste0("En very long and perhaps supercalifragilisticexpialidocious",
                 " sentence in desparate need of linebreaks")

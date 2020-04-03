@@ -6,14 +6,27 @@
 \alias{Surv2surv_pair}
 \title{convert censored times}
 \usage{
-surv_converter(data, id = NULL, toSurv = NULL, .fix = c(time = "t.",
-  event = "ev."), suffix = TRUE)
+surv_converter(
+  data,
+  id = NULL,
+  toSurv = NULL,
+  .fix = c(time = "t.", event = "ev."),
+  suffix = TRUE
+)
 
-surv_pair2Surv(data, id = NULL, .fix = c(time = "t.", event = "ev."),
-  suffix = TRUE)
+surv_pair2Surv(
+  data,
+  id = NULL,
+  .fix = c(time = "t.", event = "ev."),
+  suffix = TRUE
+)
 
-Surv2surv_pair(data, id = NULL, .fix = c(time = "t.", event = "ev."),
-  suffix = TRUE)
+Surv2surv_pair(
+  data,
+  id = NULL,
+  .fix = c(time = "t.", event = "ev."),
+  suffix = TRUE
+)
 }
 \arguments{
 \item{data}{the data, a data frame or some such object}

@@ -4,11 +4,18 @@
 \alias{dm_doc2latex}
 \title{documentation as LaTeX}
 \usage{
-dm_doc2latex(doc = NULL, file = "", where = "htb", rowname = NULL,
-  ..., group = TRUE, grouping = NULL, which = c("group", "name",
-  "var", "db", "label", "comment"), code.key = c(group = "\\\\textbf",
-  name = "\\\\texttt", var = "\\\\texttt", db = "\\\\textbf", comment =
-  "\\\\emph"))
+dm_doc2latex(
+  doc = NULL,
+  file = "",
+  where = "htb",
+  rowname = NULL,
+  ...,
+  group = TRUE,
+  grouping = NULL,
+  which = c("group", "name", "var", "db", "label", "comment"),
+  code.key = c(group = "\\\\textbf", name = "\\\\texttt", var = "\\\\texttt", db =
+    "\\\\textbf", comment = "\\\\emph")
+)
 }
 \arguments{
 \item{doc}{documentation}

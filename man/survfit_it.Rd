@@ -4,9 +4,17 @@
 \alias{survfit_it}
 \title{multiple survival curves}
 \usage{
-survfit_it(surv, data, strata = NULL, glist = NULL, w = NULL,
-  type = "kaplan-meier", prefix = c(event = "ev.", time = "t."),
-  progress = FALSE, stringsAsFactors = TRUE)
+survfit_it(
+  surv,
+  data,
+  strata = NULL,
+  glist = NULL,
+  w = NULL,
+  type = "kaplan-meier",
+  prefix = c(event = "ev.", time = "t."),
+  progress = FALSE,
+  stringsAsFactors = TRUE
+)
 }
 \arguments{
 \item{surv}{the \code{Surv} objects (as character, refering to variables in

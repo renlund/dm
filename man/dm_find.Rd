@@ -4,8 +4,7 @@
 \alias{dm_find}
 \title{find info in variables}
 \usage{
-dm_find(pattern, ignore.case = TRUE, attrib = "label", ...,
-  verbose = TRUE)
+dm_find(pattern, ignore.case = TRUE, attrib = "label", ..., verbose = TRUE)
 }
 \arguments{
 \item{pattern}{search string}
