@@ -63,3 +63,22 @@ if(FALSE){
           "sd IUAHFIASHF IAH ASFK ndf ksd")
     insert_linebreak(s, n = 12)
 }
+
+##' @describeIn insert_linebreak insert linebreak in factor
+##' @param x something interpretable as factor
+##' @param ... passed to \code{insert_linebreak}
+##' @export
+factor_il <- function(x, ...){
+    fac_x <- as.factor(x)
+    lev <- levels(fac_x)
+    lev_il <- insert_linebreak(lev, ...)
+    x_il <- insert_linebreak(as.character(fac_x), ...)
+    factor(x_il, lev_il)
+}
+
+if(FALSE){
+    a <- "a very long sentence indeed, very looong"
+    b <- "random words banana horse keyboard window exotic fruit"
+    factor_il(x = c(a,b,b,a), n = 18)
+    factor_il(factor(c(a,b,b,a)), n = 18)
+}

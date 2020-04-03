@@ -55,7 +55,7 @@ surv_pair2Surv <- function(data, id = NULL,
     EN <- .fixfnc(set, .fix['event'], suffix = suffix)
     indx_id <- which(names(data) == id)
     if(length(indx_id) > 0){
-        r <- data.frame(dummy = data[[id]])
+        r <- data.frame(dummy = data[[id]], stringsAsFactors = FALSE)
     } else r <- data.frame(1:nrow(data))
     for(i in seq_along(set)){
         r[[set[i]]] <- survival::Surv(time = data[[TN[i]]],
