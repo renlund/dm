@@ -1,6 +1,6 @@
-Package: dm
+Package: datma
 Title: Data Management
-Version: 0.0.2.9012
+Version: 0.1.0.9001
 Authors@R: person("Henrik", "Renlund", email = "henrikrenlund@gmail.com", role = c("aut", "cre"))
 Description: Data management, documented.
 Depends: R (>= 3.3.0)
