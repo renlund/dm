@@ -7,7 +7,11 @@
 contrast_rms2df <- function(c){
     rm <- c("var", "df.residual", "X", "cnames", "nvary",
             "conf.type", "conf.int", "redundant")
-    for(k in rm) c[k] <- NULL
+    for(j in names(c)){
+        if(is.null(c[j]) || is.null(c[[j]])) rm <- c(rm, j)
+    }
+    c <- c[setdiff(names(c), rm)]
+    ## for(k in rm) c[k] <- NULL
     class(c) <- "list"
     as.data.frame(c)
 }

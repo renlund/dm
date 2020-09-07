@@ -193,12 +193,14 @@ at_risk <- function(x, tp = NULL, tidy = FALSE){
                     ##      } else{
                     ##          max(x$n.risk[sel1])
                     ##      }
-                    r <- if(any(sel1 & sel2B)){
+                    r <- if(any(sel1 & sel2B, na.rm = TRUE)){
                              max(dB$n.risk)
                          } else{
                              0 ## min(x$n.risk[sel1])
                          }
-                    e <- if(any(sel1 & sel2A)) sum(dA$n.event) else 0
+                    e <- if(any(sel1 & sel2A, na.rm = TRUE)){
+                             sum(dA$n.event)
+                         } else 0
                     tmp <- data.frame(
                         outcome = O,
                         strata = S,
