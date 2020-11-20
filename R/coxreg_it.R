@@ -95,10 +95,12 @@ if(FALSE){
 ##'
 ##' convert a \code{rms::cph} object to a data frame
 ##' @param cph an object created by \code{rms::cph}
+##' @param useg logical; if \code{TRUE} the function will try harder to add
+##'     info from \code{anova(cph)} onto info from summary(cph)
 ##' @return a data.frame
 ##' @importFrom stats anova
 ##' @export
-cph2df <- function(cph){
+cph2df <- function(cph, useg = TRUE){
     if(!any(grepl("package:rms", search()))){
         message("might want to 'library(rms)' at this point\n")
     }
@@ -114,7 +116,15 @@ cph2df <- function(cph){
     names(sdf) <- c("low", "high", "HR", "conf.low", "conf.high")
     rownames(sdf) <- NULL
     r0 <- cbind(data.frame(term = dn1[!hri]), sdf)
-    merge(r0, adf, all.x = TRUE, by = "term")
+    if(useg){
+        r0$tmp <- unlist(lapply(r0$term,
+                                function(x) strsplit(x, split = " ")[[1]][1]))
+        ut <- merge(r0, adf, all.x = TRUE, by.x = "tmp", by.y = "term")
+        ut$tmp <- NULL
+        ut
+    } else{
+        merge(r0, adf, all.x = TRUE, by = "term")
+    }
 }
 
 ##' @describeIn cph_it example  of code to loop out results  into a rnw document
