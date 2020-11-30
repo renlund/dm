@@ -12,6 +12,10 @@
 ##' @param w weight or name of variable that provides weights
 ##' @param type passed to \code{survival::survfit}
 ##' @param prefix prefix values for times and events
+##' @param vs_age logical; should KM curves be with age on the x-axis?
+##' @param age_var character; name of age variable. N.B. important that age is
+##'     measured in the same units as the time variable
+##' @param age_bound numeric; what age to start from
 ##' @param progress primitive displayer of progress
 ##' @param stringsAsFactors logical, if TRUE will keep ordering of ingoing stuff
 ##' @return a data frame (much like a \code{broom::tidy}-version of the output)
@@ -33,6 +37,7 @@ survfit_it <- function(surv, data,
                        strata = NULL, glist = NULL, w = NULL,
                        type = "kaplan-meier",
                        prefix = c(event = "ev.", time = "t."),
+                       vs_age = FALSE, age_var = NULL, age_bound = NULL,
                        progress = FALSE,
                        stringsAsFactors = TRUE){
     N <- nrow(data)
@@ -49,6 +54,10 @@ survfit_it <- function(surv, data,
         data[[strata]] <- factor(data[[strata]])
     }
     strata_lev <- levels(data[[strata]])
+    if(!vs_age & !is.null(age_var) & !is.null(age_bound)){
+        message(paste0("[survfit_it] 'age_var' and 'age_bound' will only ",
+                       "matter if 'vs_age' is TRUE."))
+    }
     if(!all(surv %in% names(data))){
         ## if variables are not of class Surv they must have consistent
         ## naming, with the same prefix for the time- and event variable, resp.
@@ -71,13 +80,40 @@ survfit_it <- function(surv, data,
                                 " in the data\n"))
                 }
             )
-            data[[surv[i]]] <- survival::Surv(time = ti, event = ev)
+            ## EXPERIMENTAL FEATURE START #####################################
+            if(vs_age){
+                age <- tryCatch(
+                    expr = {
+                        get(age_var, data)
+                    },
+                    error = function(e){
+                        stop(paste0(" oops! cant find age variable ", age_var,
+                                    " in the data\n "))
+                    }
+                )
+                t2 <- age + ti ## XK ti NEED TO BE IN SAME UNITS AS AGE
+                subSet <- t2 >= age_bound
+                t1 <- pmin(age, age_bound)
+                data[[surv[i]]] <- survival::Surv(time = t1,
+                                                  time2 = t2,
+                                                  event = ev,
+                                                  type = "counting")
+            } else {
+                data[[surv[i]]] <- survival::Surv(time = ti,
+                                                  event = ev)
+                subSet <- TRUE
+            }
+            ## EXPERIMENTAL FEATURE END #######################################
+            ## data[[surv[i]]] <- survival::Surv(time = ti, event = ev)
         }
     }
     R <- NULL
     for(i in seq_along(glist)){
         for(j in seq_along(strata_lev)){
-            filter <- glist[[i]] & data[[strata]] == strata_lev[j]
+            ## EXPERIMENTAL FEATURE START #####################################
+            filter <- glist[[i]] & data[[strata]] == strata_lev[j] & subSet
+            ## EXPERIMENTAL FEATURE END #######################################
+            ## filter <- glist[[i]] & data[[strata]] == strata_lev[j]
             X <- data[filter, ]
             W <- w[filter]
             for(k in seq_along(surv)){

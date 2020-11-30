@@ -12,6 +12,9 @@ survfit_it(
   w = NULL,
   type = "kaplan-meier",
   prefix = c(event = "ev.", time = "t."),
+  vs_age = FALSE,
+  age_var = NULL,
+  age_bound = NULL,
   progress = FALSE,
   stringsAsFactors = TRUE
 )
@@ -34,6 +37,13 @@ variable in 'data'}
 \item{type}{passed to \code{survival::survfit}}
 
 \item{prefix}{prefix values for times and events}
+
+\item{vs_age}{logical; should KM curves be with age on the x-axis?}
+
+\item{age_var}{character; name of age variable. N.B. important that age is
+measured in the same units as the time variable}
+
+\item{age_bound}{numeric; what age to start from}
 
 \item{progress}{primitive displayer of progress}
 
