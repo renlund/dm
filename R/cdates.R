@@ -25,7 +25,8 @@ cdate <- function(x, sep = NULL, low.bound = NULL, verbose = TRUE,
     ## make dates directly, for those possible
     dform <- paste0("%Y", sep, "%m", sep, "%d")
     dd <- as.Date(x, format = dform)
-    fail <- which(is.na(dd))
+    ## fail <- which(is.na(dd))
+    fail <- which(is.na(dd) & !is.na(x)) ## surely, this must be what I want?
     dummy <- 0
     if(verbose){
         if(length(fail) == 0){
