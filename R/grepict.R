@@ -22,7 +22,7 @@
 ##'     this will be pasted onto some output variable names, unless you set
 ##'     override this behavour by setting this argument to zero
 ##' @return See \code{\link{grepict}} for details on output
-##' @seealso \code{\link{grepict}}, \code{\link[base]{grepl}}
+##' @seealso \code{\link{grepict}}, \code{\link[base]{grep}}
 grepict_rigid <- function(pattern, x = NULL, data, ..., include = c(TRUE, TRUE),
                              long = TRUE, verbose = TRUE, paste.alias = TRUE){
     ## -- sanity checks

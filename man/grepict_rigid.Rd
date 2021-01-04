@@ -52,5 +52,5 @@ this is essentially a helper function for \code{grepict}, see
     the documentation
 }
 \seealso{
-\code{\link{grepict}}, \code{\link[base]{grepl}}
+\code{\link{grepict}}, \code{\link[base]{grep}}
 }
