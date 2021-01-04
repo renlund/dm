@@ -58,6 +58,7 @@ survfit_it <- function(surv, data,
         message(paste0("[survfit_it] 'age_var' and 'age_bound' will only ",
                        "matter if 'vs_age' is TRUE."))
     }
+    subSet <- TRUE ## will be changed if vs_age is TRUE
     if(!all(surv %in% names(data))){
         ## if variables are not of class Surv they must have consistent
         ## naming, with the same prefix for the time- and event variable, resp.
@@ -80,7 +81,6 @@ survfit_it <- function(surv, data,
                                 " in the data\n"))
                 }
             )
-            ## EXPERIMENTAL FEATURE START #####################################
             if(vs_age){
                 age <- tryCatch(
                     expr = {
@@ -101,19 +101,19 @@ survfit_it <- function(surv, data,
             } else {
                 data[[surv[i]]] <- survival::Surv(time = ti,
                                                   event = ev)
-                subSet <- TRUE
             }
-            ## EXPERIMENTAL FEATURE END #######################################
-            ## data[[surv[i]]] <- survival::Surv(time = ti, event = ev)
+        }
+    } else {
+        if(vs_age){
+            s <- paste0("vs_age TRUE not implemented in combination ",
+                        "with outcome variables of class 'Surv'")
+            stop(s)
         }
     }
     R <- NULL
     for(i in seq_along(glist)){
         for(j in seq_along(strata_lev)){
-            ## EXPERIMENTAL FEATURE START #####################################
             filter <- glist[[i]] & data[[strata]] == strata_lev[j] & subSet
-            ## EXPERIMENTAL FEATURE END #######################################
-            ## filter <- glist[[i]] & data[[strata]] == strata_lev[j]
             X <- data[filter, ]
             W <- w[filter]
             for(k in seq_along(surv)){
