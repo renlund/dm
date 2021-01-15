@@ -1,0 +1,55 @@
+##' pattern helper (specific)
+##'
+##' get the pattern for correct (simple) searches, characterized by providing the
+##' initial sequence of the string wanted, where the code searched is
+##' concatenated. Note: this function mainly serves as an example for the author
+##' to remember how to do this! Be aware if your search strings are more
+##' complicated as the author is no expert in regular expression.
+##' @param s string to match initial part of code
+##' @param code.sep the string that servers as separator in the concatenation
+##' @examples
+##' x <- c("ABC", "", "FFF XXX", "GGG  ABC FOO",
+##'        "BAR  ABC", "FOO BAR ABB", " ", ";")
+##' s.term = "ABC"
+##' grepr(pattern = pattern_conc_search(s.term), x = x)
+##' ## sample example, different separator:
+##' y <- gsub(pattern = " ", replacement = ";", x)
+##' grepr(pattern = pattern_conc_search(s.term, code.sep = ";"), x = y)
+##' @export
+pattern_conc_search <- function(s, code.sep = " "){
+    sprintf(paste0("(%s%s)|(^%s)"), code.sep, s, s)
+}
+
+##' first match from \code{pattern_conc_search}
+##'
+##' use \code{pattern_conc_search} but also extract the match from within the
+##' concatenation
+##' @param x (concatenated) search string
+##' @param s string to match initial part of code
+##' @param code.sep the string that servers as separator in the concatenation
+##' @param reduce if \code{TRUE}, always return string of same length as x
+##' @examples
+##' x <- c("ABC", "", "FFF XXX", "GGG  ABC FOO",
+##'        "BAR  ABC", "FOO BAR ABB", " ", ";")
+##' s.term = "AB(C|B)"
+##' ## extract only the (first) matches
+##' extract_match1_conc_search(x, s = s.term, reduce = TRUE)
+##' ## extract but do not reduce:
+##' data.frame(x = x,
+##'            extr.m1 = extract_match1_conc_search(x, s = s.term,
+##'                                                 reduce = FALSE))
+##' ## same example, different separator:
+##' y <- gsub(pattern = " ", replacement = ";", x)
+##' data.frame(y = y,
+##'            extr = extract_match1_conc_search(y, s = s.term,
+##'                                              code.sep = ";", reduce = FALSE))
+##' @export
+extract_match1_conc_search <- function(x, s, code.sep = " ", reduce = FALSE){
+    x1 <- strsplit(x = x, split = code.sep)
+    foo <- function(z){
+        g <- grepr(pattern = pattern_conc_search(s = s, code.sep = code.sep),
+                   x = z)[1]
+        if(is.null(g) & !reduce) NA else g
+    }
+    unlist(lapply(X = x1, FUN = foo))
+}
