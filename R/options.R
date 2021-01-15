@@ -220,11 +220,15 @@ dm_derive <- function(kill = FALSE, prompt = TRUE){
 ## add list element to derive documentation (internal use)
 ## @param name name of new list element
 ## @param value value of new list element
-dm_derive_set <- function(name, value){
+## @param if name already exists, overwrite?
+dm_derive_set <- function(name, value, overwrite = TRUE){
     L <- dm_derive()
-    L[[name]] <- value
-    assign(x = dm_get('derive'),
-           value = L,
-           envir = dm_envir)
+    do_nill <- !overwrite && name %in% names(L)
+    if(!do_nill){
+        L[[name]] <- value
+        assign(x = dm_get('derive'),
+               value = L,
+               envir = dm_envir)
+    }
     invisible(NULL)
 }

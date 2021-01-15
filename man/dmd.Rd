@@ -4,7 +4,7 @@
 \alias{dmd}
 \title{derivation documentation}
 \usage{
-dmd(name, expr, dmd = NULL, label = NULL)
+dmd(name, expr, dmd = NULL, label = NULL, overwrite = FALSE)
 }
 \arguments{
 \item{name}{name of variable assigned}

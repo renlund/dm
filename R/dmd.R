@@ -5,7 +5,7 @@
 ##' @param dmd the documentation
 ##' @param label a label to assign to the new variable
 ##' @export
-dmd <- function(name, expr, dmd = NULL, label = NULL){
+dmd <- function(name, expr, dmd = NULL, label = NULL, overwrite = FALSE){
     .required_properties(name, class = 'character', length = 1)
     .required_properties(dmd, class = c('character', 'NULL'), length = 0:1)
     v <- list(
@@ -13,7 +13,7 @@ dmd <- function(name, expr, dmd = NULL, label = NULL){
         'label' = if(is.null(label)) '' else label,
         'expr' = as.character(as.expression(substitute(expr)))
     )
-    dm_derive_set(name = name, value = v)
+    dm_derive_set(name = name, value = v, overwrite = overwrite)
     ## print(v) ## for testing
     if(is.null(label)) expr else structure(expr, label = label)
 }

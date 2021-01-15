@@ -65,6 +65,8 @@ test_that("'cdate' works", {
     expect_equal(cdate(x, low.bound = L, verbose = FALSE), y)
     L <- as.Date(c("2010-07-01" , "2010-08-10", "2012-05-06"))
     expect_error(cdate(x, low.bound = L, verbose = FALSE))
+    ## L <- as.Date(c("2009-01-01" , "2010-08-10", "2012-05-07"))
+    ## expect_error(cdate(x, low.bound = L, verbose = FALSE))
     L <- as.Date(c("2009-07-01" , "2010-08-10", "2012-05-07"))
     expect_equal(cdate(x, low.bound = L, verbose = FALSE), y)
     expect_error(cdate(x, low.bound = L, bound4all = TRUE, verbose = FALSE))
