@@ -17,12 +17,15 @@ extract_match1_conc_search(x, s, code.sep = " ", reduce = FALSE)
 }
 \description{
 use \code{pattern_conc_search} but also extract the match from within the
-concatenation
+concatenation. Note to self: the use of \code{pattern_conc_search} is
+superfluous within this function as it applies searches to the string which
+is split at the \code{code.sep}, but makes it easier to use search terms
+defined as variables
 }
 \examples{
 x <- c("ABC", "", "FFF XXX", "GGG  ABC FOO",
        "BAR  ABC", "FOO BAR ABB", " ", ";")
-s.term = "AB(C|B)"
+s.term = c("AB(C|B)", "X")
 ## extract only the (first) matches
 extract_match1_conc_search(x, s = s.term, reduce = TRUE)
 ## extract but do not reduce:

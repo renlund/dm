@@ -10,20 +10,24 @@
 ##' @examples
 ##' x <- c("ABC", "", "FFF XXX", "GGG  ABC FOO",
 ##'        "BAR  ABC", "FOO BAR ABB", " ", ";")
-##' s.term = "ABC"
+##' s.term = c("ABC", "X")
 ##' grepr(pattern = pattern_conc_search(s.term), x = x)
 ##' ## sample example, different separator:
 ##' y <- gsub(pattern = " ", replacement = ";", x)
 ##' grepr(pattern = pattern_conc_search(s.term, code.sep = ";"), x = y)
 ##' @export
 pattern_conc_search <- function(s, code.sep = " "){
-    sprintf(paste0("(%s%s)|(^%s)"), code.sep, s, s)
+    paste0(sprintf(paste0("(%s%s)|(^%s)"), code.sep, s, s), collapse = "|")
 }
+
 
 ##' first match from \code{pattern_conc_search}
 ##'
 ##' use \code{pattern_conc_search} but also extract the match from within the
-##' concatenation
+##' concatenation. Note to self: the use of \code{pattern_conc_search} is
+##' superfluous within this function as it applies searches to the string which
+##' is split at the \code{code.sep}, but makes it easier to use search terms
+##' defined as variables
 ##' @param x (concatenated) search string
 ##' @param s string to match initial part of code
 ##' @param code.sep the string that servers as separator in the concatenation
@@ -31,7 +35,7 @@ pattern_conc_search <- function(s, code.sep = " "){
 ##' @examples
 ##' x <- c("ABC", "", "FFF XXX", "GGG  ABC FOO",
 ##'        "BAR  ABC", "FOO BAR ABB", " ", ";")
-##' s.term = "AB(C|B)"
+##' s.term = c("AB(C|B)", "X")
 ##' ## extract only the (first) matches
 ##' extract_match1_conc_search(x, s = s.term, reduce = TRUE)
 ##' ## extract but do not reduce:

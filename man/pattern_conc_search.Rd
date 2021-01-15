@@ -21,7 +21,7 @@ complicated as the author is no expert in regular expression.
 \examples{
 x <- c("ABC", "", "FFF XXX", "GGG  ABC FOO",
        "BAR  ABC", "FOO BAR ABB", " ", ";")
-s.term = "ABC"
+s.term = c("ABC", "X")
 grepr(pattern = pattern_conc_search(s.term), x = x)
 ## sample example, different separator:
 y <- gsub(pattern = " ", replacement = ";", x)
