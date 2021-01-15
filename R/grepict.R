@@ -300,6 +300,33 @@ grepict <- function(pattern, x = NULL, data, id = 'id', date = 'date',
                     "grepict_rigid\n")
     .required_data_names(data.names = names(data),
                          required = c(id, date, x))
+    ## ------------------- EXPERIMENTAL START ---------------------------------
+    ## problem discovered 2021-01-15: if 'begin' and 'end' exist in data and the
+    ## call is made with begin = NULL, end = 'begin' or vice versa (which is
+    ## what one wants when trying to find e.g. medical history), then PROBLEM!
+    if(!is.null(units) && is.character(begin) &&
+       begin == "end" && "end" %in% names(units)){
+        ## create a copy of units['end'] under new strange name
+        alt.end.name.in.units <- '.__end__.'
+        if(alt.end.name.in.units %in% names(units)){
+            ## keep your fingers crossed it doesn't exists
+            stop("I sure wished it never came to this.")
+        }
+        units[alt.end.name.in.units] <- units["end"]
+        begin <- alt.end.name.in.units
+    }
+    if(!is.null(units) && is.character(end) &&
+       end == "begin" && "begin" %in% names(units)){
+        ## create a copy of units['begin'] under new strange name
+        alt.begin.name.in.units <- '.__begin__.'
+        if(alt.begin.name.in.units %in% names(units)){
+            ## keep your fingers crossed it doesn't exists
+            stop("I sure wished it never came to this.")
+        }
+        units[alt.begin.name.in.units] <- units["begin"]
+        end <- alt.begin.name.in.units
+    }
+    ## ------------------- EXPERIMENTAL END -----------------------------------
     data.begin <- if(class(begin) == "Date"){
                       begin
                   } else {
