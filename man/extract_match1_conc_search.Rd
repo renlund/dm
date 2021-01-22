@@ -13,7 +13,7 @@ extract_match1_conc_search(x, s, code.sep = " ", reduce = FALSE)
 
 \item{code.sep}{the string that servers as separator in the concatenation}
 
-\item{reduce}{if \code{TRUE}, always return string of same length as x}
+\item{reduce}{if \code{FALSE}, always return string of same length as x}
 }
 \description{
 use \code{pattern_conc_search} but also extract the match from within the

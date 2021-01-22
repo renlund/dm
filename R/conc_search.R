@@ -31,7 +31,7 @@ pattern_conc_search <- function(s, code.sep = " "){
 ##' @param x (concatenated) search string
 ##' @param s string to match initial part of code
 ##' @param code.sep the string that servers as separator in the concatenation
-##' @param reduce if \code{TRUE}, always return string of same length as x
+##' @param reduce if \code{FALSE}, always return string of same length as x
 ##' @examples
 ##' x <- c("ABC", "", "FFF XXX", "GGG  ABC FOO",
 ##'        "BAR  ABC", "FOO BAR ABB", " ", ";")
