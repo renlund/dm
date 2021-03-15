@@ -97,14 +97,15 @@ if(FALSE){
 ##' @param cph an object created by \code{rms::cph}
 ##' @param useg logical; if \code{TRUE} the function will try harder to add
 ##'     info from \code{anova(cph)} onto info from summary(cph)
+##' @param ... arguments passed to \code{summary}
 ##' @return a data.frame
 ##' @importFrom stats anova
 ##' @export
-cph2df <- function(cph, useg = TRUE){
+cph2df <- function(cph, useg = TRUE, ...){
     if(!any(grepl("package:rms", search()))){
         message("might want to 'library(rms)' at this point\n")
     }
-    s <- summary(cph)
+    s <- summary(cph, ...)
     a <- anova(cph)
     adf <- as.data.frame(a)
     adf$term <- rownames(adf)
