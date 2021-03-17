@@ -4,13 +4,15 @@
 \alias{cph2df}
 \title{cph to data frame}
 \usage{
-cph2df(cph, useg = TRUE)
+cph2df(cph, useg = TRUE, ...)
 }
 \arguments{
 \item{cph}{an object created by \code{rms::cph}}
 
 \item{useg}{logical; if \code{TRUE} the function will try harder to add
 info from \code{anova(cph)} onto info from summary(cph)}
+
+\item{...}{arguments passed to \code{summary}}
 }
 \value{
 a data.frame
