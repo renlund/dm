@@ -12,6 +12,8 @@ cluster.by.incl.next(incl.next)
 \arguments{
 \item{x}{variable from which to create cluster}
 
+\item{by}{name of method}
+
 \item{incl.next}{a logical variable that for each line include wether the
 next line should belong to the same cluster as the current line}
 }

@@ -2,7 +2,7 @@
 ##'
 ##' create cluster variable indicated by other variable
 ##' @param x variable from which to create cluster
-##' @param by
+##' @param by name of method
 ##' @export
 cluster.by <- function(x, by){
     if(length(x) == 0 | is.null(x)){
