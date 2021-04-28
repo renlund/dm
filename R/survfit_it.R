@@ -68,7 +68,7 @@ survfit_it <- function(surv, data,
                     get(paste0(prefix["time"], surv[i]), data)
                 },
                 error = function(e){
-                    stop(paste0(" oops! cant find time ", surv,
+                    stop(paste0(" oops! cant find time ", surv[i],
                                 " in the data\n "))
                 }
             )
@@ -77,7 +77,7 @@ survfit_it <- function(surv, data,
                     get(paste0(prefix["event"], surv[i]), data)
                 },
                 error = function(e){
-                    stop(paste0(" oopsie! cant find event ", surv,
+                    stop(paste0(" oopsie! cant find event ", surv[i],
                                 " in the data\n"))
                 }
             )
