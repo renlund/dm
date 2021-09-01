@@ -29,7 +29,7 @@ test_that("'cluster.by' works", code = {
     )
 
     ## random test!
-    seed <- sample(1:10000000000, 1)
+    seed <- sample(1:1000000, 1)
     set.seed(seed)
     n <- 10000
     m <- 15
