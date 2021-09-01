@@ -4,13 +4,13 @@
 
 <<'Setup', cache=FALSE, echo=FALSE, include=FALSE>>=
 ##rm(list=ls())
-library(dm)
+library(datma)
 library(knitr)
 ## .load_only <- TRUE
 ## if(.load_only){
 ##     devtools::load_all()
 ## } else {
-##     library(dm)
+##     library(datma)
 ## }
 set.seed(19790424)
 opts_knit$set(eval.after=c('fig.cap'))
@@ -20,7 +20,7 @@ if(FALSE){ ## create document
 }
 @
 
-\title{dm}
+\title{Combine matchings}
 \author{Henrik Renlund}
 \newcommand{\code}{\texttt}
 
@@ -30,7 +30,7 @@ if(FALSE){ ## create document
 
 \setcounter{section}{-1}
 \section{About}
-A document about \verb|match_combine| from the \verb|dm|
+A document about \verb|match_combine| from the \verb|datma|
 package\footnote{https://github.com/renlund/dm}. Clearly not finished.
 
 \section{Matching}

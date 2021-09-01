@@ -4,12 +4,12 @@
 
 <<'Setup', cache=FALSE, echo=FALSE, include=FALSE>>=
 rm(list=ls())
-library(dm)
+library(datma)
 ## .load_only <- TRUE
 ## if(.load_only){
 ##     devtools::load_all()
 ## } else {
-##     library(dm)
+##     library(datma)
 ## }
 set.seed(19790424)
 if(FALSE){ ## create document
@@ -20,7 +20,7 @@ if(FALSE){ ## create document
 }
 @
 
-\title{dm}
+\title{datma}
 \author{Henrik Renlund}
 \newcommand{\code}{\texttt}
 
@@ -29,7 +29,7 @@ if(FALSE){ ## create document
 \tableofcontents
 
 \section{About}
-\texttt{dm} is a package for functions relating to data management.
+\texttt{datma} is a package for functions relating to data management.
 
 \newpage
 \section{Documentation}
