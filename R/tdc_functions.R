@@ -13,6 +13,7 @@
 ##' @export
 tdc_in_study <- function(x, tstart = "tstart", tstop = "tstop"){
     ts <- sort(unique(c(x[[tstart]], x[[tstop]])))
+    ts <- ts[-length(ts)]
     foo <- function(t){
         sum(x[[tstart]] <= t & x[[tstop]] > t)
     }
