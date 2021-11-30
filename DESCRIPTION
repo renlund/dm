@@ -1,6 +1,6 @@
 Package: datma
 Title: Data Management
-Version: 0.1.0.9026
+Version: 0.1.0.9028
 Authors@R: person("Henrik", "Renlund", email = "henrikrenlund@gmail.com", role = c("aut", "cre"))
 Description: Data management, documented.
 Depends: R (>= 3.3.0)
@@ -13,6 +13,6 @@ Suggests:
     survival,
     knitr,
     testthat
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Encoding: UTF-8
 LazyData: true
