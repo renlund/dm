@@ -40,7 +40,7 @@ if(FALSE){ ## MANUAL TESTS OF cumsum_bounded
 
 ##' change active status at end of inventory
 ##'
-##' Note: this is a rgid function that requires variabes 'id' and 't'.  This
+##' Note: this is a rigid function that requires variabes 'id' and 't'.  This
 ##' function behaves much like \code{expire_status}, but the expiration boundary
 ##' is determined by end of inventory. At times 't' an individual ('id') gets
 ##' its inventory replenished by 'inventory' (which can be a fixed number or
@@ -163,15 +163,15 @@ if(FALSE){
 }
 
 ##' @describeIn expire_status_by_inventory generalization of
-##'     expire_status_by_inventory; the 'status' - now called 'state' can be
+##'     expire_status_by_inventory; the 'status' - now called 'state' - can be
 ##'     multivalued; 'usage' and 'overflow_at' can be variables in 'x'
 ##' @param null.state value assigned to expired state
 ##' @export
 expire_state_by_inventory <- function(x, inventory = NULL,
-                                   usage = NULL,
-                                   overflow_at = NULL,
-                                   null.state = "",
-                                   slim = FALSE){
+                                      usage = NULL,
+                                      overflow_at = NULL,
+                                      null.state = "",
+                                      slim = FALSE){
     .required_data_names(data.names = names(x),
                          required = c("id", "t", "state"))
     .required_properties(x = null.state,

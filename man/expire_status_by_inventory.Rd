@@ -41,7 +41,7 @@ be dropped from the output as this data is no longer complete}
 a data frame
 }
 \description{
-Note: this is a rgid function that requires variabes 'id' and 't'.  This
+Note: this is a rigid function that requires variabes 'id' and 't'.  This
 function behaves much like \code{expire_status}, but the expiration boundary
 is determined by end of inventory. At times 't' an individual ('id') gets
 its inventory replenished by 'inventory' (which can be a fixed number or
@@ -53,7 +53,7 @@ inventory, and 0 when it runs out.
 \section{Functions}{
 \itemize{
 \item \code{expire_state_by_inventory}: generalization of
-expire_status_by_inventory; the 'status' - now called 'state' can be
+expire_status_by_inventory; the 'status' - now called 'state' - can be
 multivalued; 'usage' and 'overflow_at' can be variables in 'x'
 }}
 

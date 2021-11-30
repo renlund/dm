@@ -89,7 +89,7 @@ if(FALSE){ ## MANUAL TEST OF expire_status
 }
 
 ##' @describeIn expire_status generalization of expire_status; the 'status' - now
-##'     called 'state' can be multivalued
+##'     called 'state' - can be multivalued
 ##' @param null.state value assigned to expired state
 ##' @export
 expire_state <- function(x, expire = NULL, null.state = "", slim = FALSE){

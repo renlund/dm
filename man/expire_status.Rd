@@ -39,7 +39,7 @@ keeps track of the changing status by setting parameter 'slim' to
 \section{Functions}{
 \itemize{
 \item \code{expire_state}: generalization of expire_status; the 'status' - now
-called 'state' can be multivalued
+called 'state' - can be multivalued
 }}
 
 \seealso{
