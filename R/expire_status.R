@@ -16,7 +16,7 @@
 ##'     NULL a variable called 'expire' will be created with the value(s) given
 ##'     here
 ##' @param slim logical; remove unnecessary statuses?
-##' @seealso \code{\link{expire_inventory}}
+##' @seealso \code{\link{expire_status_by_inventory}}, \code{\link{expire_state_by_inventory}}
 ##' @return a data frame
 ##' @export
 expire_status <- function(x, expire = NULL, slim = FALSE){
@@ -89,7 +89,7 @@ if(FALSE){ ## MANUAL TEST OF expire_status
 }
 
 ##' @describeIn expire_status generalization of expire_status; the 'status' - now
-##'     called 'state' - can be multivalued
+##'     called 'state' (which must exist in 'x') - can be multivalued
 ##' @param null.state value assigned to expired state
 ##' @export
 expire_state <- function(x, expire = NULL, null.state = "", slim = FALSE){

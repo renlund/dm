@@ -264,7 +264,7 @@ expire_state_by_inventory <- function(x, inventory = NULL,
         if(reduce){
             U <- Z[order.Z, c("id", "t", "state")]
             n.U <- nrow(U)
-            keep <- c(TRUE, U$status[2:n.U] != U$status[1:(n.U-1)])
+            keep <- c(TRUE, U$state[2:n.U] != U$state[1:(n.U-1)])
             U[keep, ]
         } else {
             Z[order.Z,]
