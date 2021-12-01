@@ -290,9 +290,9 @@ grepict_rigid <- function(pattern, x = NULL, data, ..., include = c(TRUE, TRUE),
 ##'     suffix, either the names of the pattern vector, or a created one.
 ##'
 ##' @export
-grepict <- function(pattern, x = NULL, data, id = 'id', date = 'date',
-                    units = NULL, units.id = id, begin = 'begin',
-                    end = 'end', include = c(TRUE, TRUE), ...,
+grepict <- function(pattern, x = NULL, data, id = NULL, date = NULL,
+                    units = NULL, units.id = id, begin = NULL,
+                    end = NULL, include = c(TRUE, TRUE), ...,
                     long = TRUE, stack = TRUE, verbose = TRUE){
     .required_properties(verbose, class = "logical", length = 1, nm = "verbose")
     if(verbose) cat("\n [Function dm::grepict set to verbose.]\n",
@@ -347,7 +347,13 @@ grepict <- function(pattern, x = NULL, data, id = 'id', date = 'date',
     .required_properties(date, class = "character", length = 1)
     .required_properties(units.id, class = "character")
     .required_properties(begin, class = c("Date", "character"), length = 1)
+    if(is.character(begin)){
+        .required_data_names(data.names = names(units), required = begin)
+    }
     .required_properties(end,   class = c("Date", "character"), length = 1)
+    if(is.character(end)){
+        .required_data_names(data.names = names(units), required = end)
+    }
     .required_properties(long, class = "logical", length = 1)
     .required_properties(stack, class = "logical", length = 1)
     if(long){
@@ -389,13 +395,17 @@ grepict <- function(pattern, x = NULL, data, id = 'id', date = 'date',
     } else { ## -- else select (and/or create) 'id', 'begin' and 'end'
         if(is.null(units[[units.id]])) stop("Need variable ", units.id," in 'units'")
         if(is.character(begin)){ ## -- if no 'begin' variable exists, create it
-            if(is.null(units[[begin]])) units[[begin]] <- data.begin
+            if(is.null(units[[begin]])) {
+                units[[begin]] <- data.begin
+            }
         } else {
             units[['begin']] <- begin
             begin <- 'begin'
         }
         if(is.character(end)){ ## -- if no 'end' variable exists, create it
-            if(is.null(units[[end]])) units[[end]] <- data.end
+            if(is.null(units[[end]])){
+                units[[end]] <- data.end
+            }
         } else {
             units[['end']] <- end
             end <- 'end'
