@@ -108,12 +108,17 @@ expire_status_by_inventory <- function(x, inventory = NULL,
         vv[times_index] <- X$inventory - usage
         c_vv <- cumsum_bounded(vv, low = 0, high = overflow_at)
         zeros_index <- which(c(FALSE, c_vv[1:(n-1)] > 0 &
-                                             c_vv[2:n] == 0))
+                                             c_vv[2:n] == 0)) + 1 ## XK added +1
         keep_index <- sort(unique(c(times_index, zeros_index)))
-        tmp <- data.frame(id = X$id[1], t = tt, remains = c_vv)[keep_index, ]
-        Z <- merge(X, tmp, all = TRUE)
+        Z <- data.frame(id = X$id[1], t = tt,
+                        ## inventory = c_vv + usage,
+                        remains = c_vv)[keep_index, ]
         Z$status <- ifelse(Z$remains > 0, 1, 0)
-        Z$remains <- NULL
+        ## Z$remains <- NULL
+        ## tmp <- data.frame(id = X$id[1], t = tt, remains = c_vv)[keep_index, ]
+        ## Z <- merge(X, tmp, all = TRUE)
+        ## Z$status <- ifelse(Z$remains > 0, 1, 0)
+        ## Z$remains <- NULL
         order.Z <- order(Z$t)
         if(reduce){
             U <- Z[order.Z, c("id", "t", "status")]
@@ -138,7 +143,7 @@ if(FALSE){
               0,10,20)
     )
     (a <- expire_status(x, expire = 5))
-    (b <- expire_status_by_inventory(x, inventory = 5+1))
+    (b <- expire_status_by_inventory(x, inventory = 5))
     v <- c("id", "t", "status")
     identical(a[, v],b[, v])
     ## check correspondence to scaling:
@@ -253,7 +258,7 @@ expire_state_by_inventory <- function(x, inventory = NULL,
                                   cumsum_bounded(X$vv, low = 0, high = X$oa[1])
                               }), use.names = FALSE)
         zeros_index <- which(c(FALSE, c_vv[1:(n-1)] > 0 &
-                                             c_vv[2:n] == 0))
+                                             c_vv[2:n] == 0)) + 1 ## XK added +1
         keep_index <- sort(unique(c(times_index, zeros_index)))
         Z <- data.frame(id = X$id[1], t = tt, state = ss, remains = c_vv)[keep_index, ]
         Z$state <- ifelse(Z$remains == 0, null.state, Z$state)

@@ -1,0 +1,172 @@
+%\VignetteEngine{knitr::knitr}
+%\VignetteIndexEntry{expire status}
+\documentclass{article}
+
+<<'Setup', cache=FALSE, echo=FALSE, include=FALSE>>=
+##rm(list=ls())
+library(datma)
+library(knitr)
+## .load_only <- TRUE
+## if(.load_only){
+##     devtools::load_all()
+## } else {
+##     library(datma)
+## }
+set.seed(19790424)
+opts_knit$set(eval.after=c('fig.cap'))
+## opts_chunk$set(include = FALSE, echo = FALSE)
+if(FALSE){ ## create document
+    knitr::knit2pdf('expire-status.rnw')
+    shell.exec('expire-status.pdf')
+}
+@
+
+\title{Expire status}
+\author{Henrik Renlund}
+\newcommand{\code}{\texttt}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\setcounter{section}{-1}
+\section{About}
+A document about \verb|expire_status| and related functions from the
+\verb|datma| package\footnote{https://github.com/renlund/dm}. Clearly not
+finished.
+
+\section{Introduction}
+The functions
+\begin{itemize}
+\item \verb|expire_status|,
+\item \verb|expire_state|,
+\item \verb|expire_status_by_inventory|, and,
+\item \verb|expire_state_by_inventory|,
+\end{itemize}
+are all about setting up a data frame of times and statuses/states that can be
+used for calculating time dependent covariates (typically with
+\verb|survival::tmerge|). In this context \verb|status| refers to a binary
+0/1-value, whereas \verb|state| can be multivalued. \emph{Without} suffix
+\verb|_by_inventory|, the functions imply that the time of the duration of a
+state is some (at that time) fixed number such that the state can "run out" or
+be either renewed with a (possibly new) reset fixed duration, or change to
+another state. \emph{With} suffix \verb|_by_inventory|, the duration depends on
+an inventory of "medicine", the excess of which may be carried over to a new
+duration period.
+
+\textbf{Note:} these functions are \emph{rigid} in the sense that they require
+the variables in the input data frame to have certain names, in particular the
+id-variable must be called \verb|id|, and the time-variable must be called
+\verb|t|.
+
+\section{Expire status by fixed time or inventory}
+Lets begin with an easy example; at times -5, 10, and 15 a duration of length 10
+(unless it is renewed) will be initiated:
+
+<<>>=
+d <- data.frame(id = 1, t = c(-5, 10, 15))
+expire_status(d, expire = 10)
+@
+
+Note that the period starting at 10 is reset at 15, so that the final period
+lasts from 15 to 25. Note also that the output contains a redundancy in line 4 if we only
+care about the change-points. Redundancies can be removed with
+\verb|slim = TRUE|.
+
+<<>>=
+expire_status(d, expire = 10, slim = TRUE)
+@
+
+If we instead wanted to think of the times as 10-pill dispensation of some drug
+that is consumed by 1 pill/day and that the old stock of drugs are not thrown
+away when a dispensation occurs before is has been depleted, we instead use
+
+<<>>=
+expire_status_by_inventory(d, inventory = 10)
+@
+
+Note that there is a variable \verb|remains| that keeps track of pills remaining
+in stock at time $t$ \emph{after} thats days consumption has been had. (This is
+probably mostly useless, but this is the variable controlled by argument
+\verb|overflow_at|) which is described below.)
+
+Here we see that the new dispensation of 10 pills at $t=15$ comes when 5 pills
+remain in stock. Thus, the dispensation from $t=15$ will last 10+5 days. Again,
+we can remove redundancies with \verb|slim = TRUE|:
+
+<<>>=
+expire_status_by_inventory(d, inventory = 10, slim = TRUE)
+@
+
+(in which case the \verb|remains| variable no longer might makes sense and is
+removed).
+
+\subsection{Expiration and inventory can be variables}
+In both functions the duration can be defined by variables in the data
+set. These must have names \verb|expire| or \verb|inventory|.
+
+<<>>=
+d2 <- data.frame(id = rep(1:2, each = 3), t = rep(c(-5, 10, 15), 2))
+d2$inventory <- d2$expire <- ifelse(d2$id == 1, 10, 20)
+print(d2)
+@
+In this data set, both individuals have the same times, but differ on duration
+of status.
+
+<<>>=
+expire_status(d2, slim = TRUE)
+expire_status_by_inventory(d2, slim = TRUE)
+@
+
+We can also set a parameter to control how big the inventory can get.  Note
+however, that the daily usage is thought of as bein consumed immediately upon
+dispensation, so inventory size relates to variable \verb|remains|.
+
+<<>>=
+a <- expire_status_by_inventory(subset(d2, id==2))
+a$in.a <- TRUE
+b <- expire_status_by_inventory(subset(d2, id==2),
+                                overflow_at = 30)
+b$in.B <- TRUE
+names(b)[names(b) == "remains"] <- "remains bounded"
+merge(a, b, all = T)
+@
+
+In the second calculation (\verb|b|), the stock of pills (after daily usage)
+cannot exceed 30.
+
+\section{Expire state by fixed time or inventory}
+As mentioned in the introduction, state refers to a (possibly) multivalued
+variable. The functions \verb|expire_state| and \verb|expire_state_by_inventory|
+are simply more elaborate versions of the corresponding \verb|status|-functions.
+
+<<>>=
+D <- data.frame(id = 1, t = c(0, 10, 20, 30),
+                state = LETTERS[c(1,1:3)],
+                expire = c(15, 15, 5, 1))
+expire_state(D, null.state = "(no state)")
+expire_state(D, null.state = "(no state)", slim = TRUE)
+@
+
+The \verb|expire_state_by_inventory| allows for \verb|inventory|, \verb|usage|,
+and \verb|overflow_at| to be variables in the data frame.
+
+<<>>=
+usage1 <- c(A = 1, B = 3, C = 5)
+usage2 <- c(A = 2, B = 4, C = 6)
+disp1 <- c(A = 8, B = 30, C = 60)
+disp2 <- c(A = 36, B = 36, C = 36)
+D2 <- data.frame(id = rep(1:2, each = 6),
+                 t = rep(seq(0, 50, by=10), 2),
+                 state = rep(rep(LETTERS[1:3], each = 2), 2))
+D2$usage <- ifelse(D2$id==1, usage1[D2$state], usage2[D2$state])
+D2$inventory <- ifelse(D2$id==1, disp1[D2$state], disp2[D2$state])
+a <- expire_state_by_inventory(D2, overflow_at = Inf,
+                               null.state = ".")
+merge(D2, a, all.y = TRUE)
+@
+
+
+
+
+\end{document}
