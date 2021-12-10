@@ -4,7 +4,13 @@
 \alias{extract_match1_conc_search}
 \title{first match from \code{pattern_conc_search}}
 \usage{
-extract_match1_conc_search(x, s, code.sep = " ", reduce = FALSE)
+extract_match1_conc_search(
+  x,
+  s,
+  code.sep = " ",
+  reduce = FALSE,
+  s.fixed = FALSE
+)
 }
 \arguments{
 \item{x}{(concatenated) search string}
@@ -14,6 +20,9 @@ extract_match1_conc_search(x, s, code.sep = " ", reduce = FALSE)
 \item{code.sep}{the string that servers as separator in the concatenation}
 
 \item{reduce}{if \code{FALSE}, always return string of same length as x}
+
+\item{s.fixed}{set to \code{TRUE} if 's' was created by
+\code{pattern_conc_search}}
 }
 \description{
 use \code{pattern_conc_search} but also extract the match from within the

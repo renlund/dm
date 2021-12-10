@@ -32,6 +32,8 @@ pattern_conc_search <- function(s, code.sep = " "){
 ##' @param s string to match initial part of code
 ##' @param code.sep the string that servers as separator in the concatenation
 ##' @param reduce if \code{FALSE}, always return string of same length as x
+##' @param s.fixed set to \code{TRUE} if 's' was created by
+##'     \code{pattern_conc_search}
 ##' @examples
 ##' x <- c("ABC", "", "FFF XXX", "GGG  ABC FOO",
 ##'        "BAR  ABC", "FOO BAR ABB", " ", ";")
@@ -48,11 +50,12 @@ pattern_conc_search <- function(s, code.sep = " "){
 ##'            extr = extract_match1_conc_search(y, s = s.term,
 ##'                                              code.sep = ";", reduce = FALSE))
 ##' @export
-extract_match1_conc_search <- function(x, s, code.sep = " ", reduce = FALSE){
+extract_match1_conc_search <- function(x, s, code.sep = " ", reduce = FALSE,
+                                       s.fixed = FALSE){
     x1 <- strsplit(x = x, split = code.sep)
+    p <- if(s.fixed) s else pattern_conc_search(s = s, code.sep = code.sep)
     foo <- function(z){
-        g <- grepr(pattern = pattern_conc_search(s = s, code.sep = code.sep),
-                   x = z)[1]
+        g <- grepr(pattern = p, x = z)[1]
         if(is.null(g) & !reduce) NA else g
     }
     unlist(lapply(X = x1, FUN = foo))
