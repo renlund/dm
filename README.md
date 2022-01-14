@@ -1,5 +1,6 @@
 R package 'dm'
 ===================
 
-Functions relating to data management.
-[![Travis-CI Build Status](https://travis-ci.org/renlund/dm.svg?branch=master)](https://travis-ci.org/renlund/dm)
+(Obsolete) Functions relating to data management.
+
+*NOTE* Superseeded by the **datma** package (as there is a CRAN-package called **dm**)

@@ -1,4 +1,4 @@
-Package: datma
+Package: dm
 Title: Data Management
 Version: 0.1.0.9030
 Authors@R: person("Henrik", "Renlund", email = "henrikrenlund@gmail.com", role = c("aut", "cre"))

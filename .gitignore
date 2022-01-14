@@ -7,3 +7,5 @@ ignore
 /doc/
 /Meta/
 R/A-in-progress.R
+*.tex
+*.pdf
